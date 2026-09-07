@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "checks": [
+    "bundled examples parsed and committed through UI",
+    "native save dialog wrote 4 ICS events",
+    "native open dialog and frozen OCR process committed image result",
+    "five stable event IDs retained after native application restart"
+  ],
+  "startup_seconds": 4.5,
+  "exit_code": 0
+}

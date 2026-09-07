@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "rapidocr": "3.4.2",
+  "onnxruntime": "1.23.2",
+  "files": [
+    {
+      "role": "Det",
+      "filename": "ch_PP-OCRv5_mobile_det.onnx",
+      "sha256": "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae",
+      "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.4.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_mobile_det.onnx",
+      "license": "Apache-2.0"
+    },
+    {
+      "role": "Rec",
+      "filename": "ch_PP-OCRv5_rec_mobile_infer.onnx",
+      "sha256": "5825fc7ebf84ae7a412be049820b4d86d77620f204a041697b0494669b1742c5",
+      "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.4.0/onnx/PP-OCRv5/rec/ch_PP-OCRv5_rec_mobile_infer.onnx",
+      "license": "Apache-2.0"
+    },
+    {
+      "role": "Cls",
+      "filename": "ch_ppocr_mobile_v2.0_cls_infer.onnx",
+      "sha256": "e47acedf663230f8863ff1ab0e64dd2d82b838fceb5957146dab185a89d6215c",
+      "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.4.0/onnx/PP-OCRv4/cls/ch_ppocr_mobile_v2.0_cls_infer.onnx",
+      "license": "Apache-2.0"
+    },
+    {
+      "role": "font",
+      "filename": "NotoSansSC.ttf",
+      "sha256": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da",
+      "url": "https://raw.githubusercontent.com/google/fonts/5e35378e6bda803962ee6fd257e444a7d459660d/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf",
+      "license": "OFL-1.1"
+    }
+  ]
+}

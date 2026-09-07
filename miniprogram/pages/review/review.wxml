@@ -1,0 +1,37 @@
+<view class="page review-page">
+  <view class="review-title">{{isPending ? '补充这条安排' : '核对与修正'}}</view>
+  <view class="muted intro">以原表为依据填写，保存后自动更新排序和冲突提示。</view>
+  <view wx:if="{{!unavailable}}" class="card edit-card">
+    <view class="label">事项<text class="required">必填</text></view>
+    <input class="control {{errors.title ? 'invalid' : ''}}" value="{{form.title}}" placeholder="例如：消防培训" maxlength="2000" data-field="title" bindinput="fieldChange" disabled="{{busy}}" />
+    <view wx:if="{{errors.title}}" class="field-error">{{errors.title}}</view>
+    <view class="label">日期<text class="required">必填</text></view>
+    <picker mode="date" value="{{form.date}}" start="1900-01-01" end="2199-12-31" data-field="date" bindchange="fieldChange" disabled="{{busy}}"><view class="control picker {{errors.date ? 'invalid' : ''}}">{{form.date || '请选择日期'}}<text>选择</text></view></picker>
+    <view wx:if="{{errors.date}}" class="field-error">{{errors.date}}</view>
+    <view class="label">时间<text class="optional">未注明时可以留空</text></view>
+    <view class="time-fields">
+      <view class="time-field"><view class="muted">开始</view><picker mode="time" value="{{form.start || '08:00'}}" data-field="start" bindchange="fieldChange" disabled="{{busy}}"><view class="control">{{form.start || '未注明'}}</view></picker><button wx:if="{{form.start}}" class="text-button" data-field="start" bindtap="clearTime" disabled="{{busy}}">清空开始时间</button></view>
+      <view class="time-field"><view class="muted">结束</view><picker mode="time" value="{{form.end || '16:00'}}" data-field="end" bindchange="fieldChange" disabled="{{busy}}"><view class="control">{{form.end || '未注明'}}</view></picker><button wx:if="{{form.end}}" class="text-button" data-field="end" bindtap="clearTime" disabled="{{busy}}">清空结束时间</button></view>
+    </view>
+    <view wx:if="{{errors.start}}" class="field-error">{{errors.start}}</view><view wx:if="{{errors.end}}" class="field-error">{{errors.end}}</view>
+    <view class="switch-row"><text>次日结束</text><switch checked="{{form.next_day}}" color="#6a59d7" data-field="next_day" bindchange="fieldChange" disabled="{{busy}}" /></view>
+    <view class="label">班次</view><input class="control" value="{{form.shift}}" placeholder="例如：早班，可留空" maxlength="1000" data-field="shift" bindinput="fieldChange" disabled="{{busy}}" />
+    <view class="switch-row"><text>明确设为全天（不填写时间）</text><switch checked="{{form.all_day}}" color="#6a59d7" data-field="all_day" bindchange="fieldChange" disabled="{{busy}}" /></view>
+    <view class="label">分类</view><input class="control" value="{{form.category}}" maxlength="40" data-field="category" bindinput="fieldChange" placeholder="工作 / 学习 / 其他" />
+    <view class="label">地点</view><input class="control" value="{{form.location}}" placeholder="例如：二楼会议室，可留空" maxlength="2000" data-field="location" bindinput="fieldChange" disabled="{{busy}}" />
+    <view class="label">备注</view><textarea class="control notes" value="{{form.notes}}" placeholder="每行一条，可留空" maxlength="-1" data-field="notes" bindinput="fieldChange" disabled="{{busy}}" auto-height />
+    <view wx:if="{{errors.notes}}" class="field-error">{{errors.notes}}</view>
+  </view>
+  <view wx:if="{{!unavailable}}" class="card evidence-card"><view class="evidence-toggle" bindtap="toggleEvidence">原表线索与修正记录<text>{{showEvidence ? '收起' : '展开'}}</text></view><view wx:if="{{showEvidence}}">
+    <view wx:for="{{warnings}}" wx:key="*this" class="field-warning">{{item}}</view>
+    <view wx:for="{{sources}}" wx:key="sourceKey" class="evidence-item"><view>{{item.filename}} / {{item.sheet}} / {{item.name_cell}}</view><view>{{item.evidenceText}}</view><view class="excerpt">{{item.excerpt}}</view></view>
+    <view wx:for="{{history}}" wx:key="key" class="evidence-item"><view>第 {{index + 1}} 次修正前 · {{item.title}}</view><view>{{item.summary}}</view><view>{{item.detail}}</view></view>
+    <view class="muted evidence-note">修正只更新个人日程，原表线索保持原样。</view>
+    <view class="muted">{{basis}}</view>
+    <image wx:for="{{images}}" wx:key="*this" src="{{item}}" mode="widthFix" style="width:100%;margin:16rpx 0" />
+  </view></view>
+  <view wx:if="{{error}}" class="error save-error">{{error}}</view>
+  <button wx:if="{{!unavailable}}" class="primary save-button" bindtap="save" loading="{{busy}}" disabled="{{busy}}">{{busy ? '正在更新日程' : isPending ? '确认并加入时间线' : '保存修正'}}</button>
+  <button class="secondary cancel-button" bindtap="cancel" disabled="{{busy}}">返回时间线</button>
+  <button wx:if="{{!manual && !unavailable}}" class="secondary cancel-button" bindtap="hide" disabled="{{busy}}">隐藏安排（可在“我的”恢复）</button>
+</view>

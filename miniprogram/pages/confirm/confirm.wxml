@@ -1,0 +1,25 @@
+<view class="page">
+  <view class="section-title">核对后加入日历</view><view class="muted">本机保存日程、来源文字和相关图片局部证据。原图由后端处理后清理。取消或返回不会改变日历。</view>
+  <view class="card panel"><picker range="{{modes}}" value="{{mode}}" bindchange="mode"><view class="field">导入方式：{{modes[mode]}} ▾</view></picker>
+    <input wx:if="{{!mode}}" class="field" value="{{sourceName}}" data-field="sourceName" bindinput="field" placeholder="命名来源，例如单位月度排班" />
+    <block wx:if="{{mode}}"><picker range="{{sources}}" range-key="name" value="{{sourceIndex}}" bindchange="source"><view class="field">来源：{{sources[sourceIndex].name || '请选择'}} ▾</view></picker>
+      <picker mode="date" value="{{from}}" data-field="from" bindchange="field"><view class="field">覆盖开始：{{from}}</view></picker><picker mode="date" value="{{to}}" data-field="to" bindchange="field"><view class="field">覆盖结束：{{to}}</view></picker>
+      <view class="notice">范围内未出现的旧安排会列为可能取消，请逐项确认。疑似改班可在下方指定与旧安排的对应关系。</view>
+    </block>
+  </view>
+  <view class="card panel"><view class="section-title">批量补全草稿</view><picker mode="date" data-field="batchDate" bindchange="field"><view class="field">日期：{{batchDate || '不更改'}}</view></picker><picker mode="time" data-field="batchStart" bindchange="field"><view class="field">开始：{{batchStart || '不更改'}}</view></picker><picker mode="time" data-field="batchEnd" bindchange="field"><view class="field">结束：{{batchEnd || '未填写'}}</view></picker><view class="field">次日结束 <switch data-field="nextDay" bindchange="field" checked="{{nextDay}}" /></view><input class="field" data-field="batchLocation" bindinput="field" placeholder="地点（留空不改）" /><input class="field" data-field="batchCategory" bindinput="field" placeholder="分类（留空不改）" /><button class="secondary" bindtap="batch">应用到本批草稿并核对</button></view>
+  <view class="card panel" wx:for="{{rows}}" wx:key="index"><view class="event-title">{{item.title}}</view><view>{{item.date || '日期待确认'}} · {{item.timeLabel}}</view><view class="muted">{{item.location}} {{item.status === 'pending' ? '· 待确认' : ''}}</view><view wx:for="{{item.sources}}" wx:for-item="s" wx:key="sourceKey" class="muted">{{s.filename}} / {{s.name_cell}} · {{s.excerpt}}</view>
+    <picker wx:if="{{mode}}" range="{{mappingLabels}}" data-index="{{item.draftIndex}}" bindchange="map"><view class="field">{{item.mappingLabel || '指定旧安排（完全相同会自动对应）'}} ▾</view></picker>
+  </view>
+  <view wx:if="{{pageCount > 1}}" class="actions"><button class="secondary" data-delta="-1" bindtap="page" disabled="{{!pageIndex}}">上一页</button><text>{{pageIndex + 1}} / {{pageCount}}</text><button class="secondary" data-delta="1" bindtap="page" disabled="{{pageIndex + 1 >= pageCount}}">下一页</button></view>
+  <view wx:for="{{files}}" wx:key="index" class="card panel"><view>{{item.filename}}</view><view wx:if="{{item.error}}" class="error">{{item.error}}</view><block wx:for="{{item.sheets}}" wx:for-item="sheet" wx:key="sheet"><view class="muted">{{sheet.sheet}} · {{sheet.name_matches}} 处完整姓名，{{sheet.pending}} 项待确认</view><scroll-view scroll-x><view class="grid-preview"><view class="grid-row" wx:for="{{sheet.preview}}" wx:for-item="row" wx:key="index"><text wx:for="{{row}}" wx:for-item="cell" wx:key="cell">{{cell.cell}} {{cell.text}}</text></view></view></scroll-view></block></view>
+  <button class="primary" bindtap="preview" loading="{{busy}}" disabled="{{busy}}">计算加入与变化预览</button>
+  <view wx:if="{{preview}}" class="card panel"><view class="section-title">将新增 {{preview.added}} 项 · 重复 {{preview.duplicates}} 项</view><view class="muted">本批 {{preview.pending}} 项待确认</view><view wx:for="{{preview.warnings}}" wx:key="*this" class="notice">{{item}}</view>
+    <view wx:for="{{preview.changed}}" wx:key="id" class="field">{{item.label}}：{{item.before.date}} {{item.before.start}} {{item.before.title}} → {{item.after.date}} {{item.after.start}} {{item.after.title}} {{item.after.location}}</view>
+    <checkbox-group bindchange="cancellations"><label class="field" wx:for="{{preview.cancelled}}" wx:key="id"><checkbox value="{{item.id}}" checked="{{item.checked}}" />确认此来源取消：{{item.date}} {{item.title}}</label></checkbox-group>
+    <view wx:for="{{preview.corrections}}" wx:key="id"><view class="notice">新版与个人修正冲突</view><radio-group data-id="{{item.id}}" bindchange="correction"><label><radio value="keep" checked="{{item.choice === 'keep'}}" />保留个人修正</label><label><radio value="new" checked="{{item.choice === 'new'}}" />采用新版</label></radio-group></view>
+    <view wx:if="{{preview.unresolvedCount}}" class="notice">还有 {{preview.unresolvedCount}} 处需选择。选择后请重新计算预览。</view>
+    <button class="primary" bindtap="save" disabled="{{!acknowledged || busy}}">确认保存到本机日历</button>
+    <view wx:if="{{changePages > 1}}" class="actions"><button class="secondary" data-delta="-1" bindtap="changePage">上一页变更</button><text>{{changeIndex+1}} / {{changePages}}</text><button class="secondary" data-delta="1" bindtap="changePage">下一页变更</button></view>
+  </view><view wx:if="{{error}}" class="error">{{error}}</view>
+</view>

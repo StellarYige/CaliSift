@@ -1,0 +1,51 @@
+<view class="page {{large ? 'large' : ''}}">
+  <view wx:if="{{firstUse}}" class="card panel"><image class="empty-icon" src="/assets/star.svg" /><view class="section-title">把表格交给星程，<br/>只看属于你的安排。</view><view class="muted">先填写完整姓名，导入表格或清晰图片，核对后建立你的个人日历。</view><button class="primary" bindtap="importFiles">开始整理安排</button><view class="error" wx:if="{{persistenceError}}">{{persistenceError}}</view></view>
+  <block wx:if="{{!firstUse}}">
+  <view class="result-brand"><image src="/assets/star.svg" mode="aspectFit" /><text>我的时间线</text></view>
+  <view class="result-title">{{name}}的安排</view>
+  <view class="result-subtitle">{{savedLocally ? '已保存到本机，下次打开可继续查看。' : '当前会话中的日程，原表线索可随时核对。'}}</view>
+  <view wx:if="{{persistenceError}}" class="notice storage-notice">{{persistenceError}}<button class="secondary" bindtap="retrySave">重试保存到本机</button></view>
+  <view class="summary card"><view><text class="stat">{{count}}</text><text class="muted">项安排</text></view><view><text class="stat">{{fileCount}}</text><text class="muted">份文件</text></view><view><text class="stat">{{pendingCount}}</text><text class="muted">项待确认</text></view></view>
+  <view wx:if="{{conflictCount}}" class="notice top-notice">有 {{conflictCount}} 组安排需要留意，已在时间线上标注。</view>
+  <view wx:if="{{hasUpdate}}" class="notice">来源已更新，可在“我的”查看撤销选项。</view>
+  <view class="actions"><button class="secondary" bindtap="view" data-view="daily">日常</button><button class="secondary" bindtap="view" data-view="month">月历</button><button class="secondary" bindtap="view" data-view="timeline">时间线</button></view>
+  <view class="actions"><button class="secondary" bindtap="toggleFilters">{{showFilters ? '收起筛选' : '查找和筛选'}}{{query || dateFilter || sourceIndex ? ' · 已筛选' : ''}}</button><button class="secondary" bindtap="add">手动新增</button></view>
+  <view wx:if="{{showFilters}}" class="card panel"><input class="field" placeholder="查找日期、事项、地点或来源" value="{{query}}" data-field="query" bindinput="filter" /><picker mode="date" value="{{dateFilter}}" data-field="dateFilter" bindchange="filter"><view class="field">日期：{{dateFilter || '全部'}}</view></picker><picker range="{{sources}}" range-key="name" value="{{sourceIndex}}" data-field="sourceIndex" bindchange="filter"><view class="field">{{sources[sourceIndex].name}} ▾</view></picker><button class="secondary" bindtap="clearFilters">清除筛选</button></view>
+  <block wx:if="{{view === 'daily'}}"><view class="section-title">今天 · {{today}}</view><view wx:if="{{!todayEvents.length}}" class="muted">今天没有已确认安排</view><view class="card panel" wx:for="{{todayEvents}}" wx:key="id" data-id="{{item.id}}" bindtap="editEvent"><view class="event-time">{{item.timeLabel}}</view><view class="event-title">{{item.title}}</view><view class="muted">{{item.location}} {{item.conflictLabel}}</view></view><view class="section-title">下一项</view><view class="card panel" wx:if="{{nextEvent}}" data-id="{{nextEvent.id}}" bindtap="editEvent">{{nextEvent.date}} · {{nextEvent.timeLabel}}<view class="event-title">{{nextEvent.title}}</view></view><view wx:else class="muted">暂无注明时间的后续安排</view><view class="section-title">未来七天</view><view class="card panel" wx:for="{{weekEvents}}" wx:key="id" data-id="{{item.id}}" bindtap="editEvent">{{item.date}} · {{item.timeLabel}}<view class="event-title">{{item.title}}</view><view class="muted">{{item.location}} {{item.conflictLabel}}</view></view></block>
+  <view wx:if="{{view === 'month'}}" class="card panel"><view class="actions"><button class="secondary" data-delta="-1" bindtap="month">上月</button><view>{{month}}</view><button class="secondary" data-delta="1" bindtap="month">下月</button></view><view class="month-grid"><view wx:for="{{['一','二','三','四','五','六','日']}}" wx:key="*this">{{item}}</view><view wx:for="{{monthCells}}" wx:key="key" data-date="{{item.date}}" bindtap="day" class="month-day {{item.count ? 'occupied' : ''}}">{{item.day}}<view class="month-count" wx:if="{{item.count}}">{{item.count}} 项</view></view></view></view>
+  <block wx:if="{{view === 'timeline'}}">
+  <view wx:if="{{!count}}" class="empty card"><image class="empty-icon" src="/assets/star.svg" mode="aspectFit" /><view class="empty-title">{{pendingCount ? '找到你了，还需要核对一些信息' : '暂时没有找到你的安排'}}</view><view class="muted">{{pendingCount ? '根据原表补充下面的待确认项，即可加入时间线。' : '请确认姓名与表格一致，并查看文件检查结果。'}}</view></view>
+  <view class="day" wx:for="{{groups}}" wx:key="date" wx:for-item="group">
+    <view class="day-heading"><view class="day-dot"></view><text class="day-date">{{group.label}}</text><text class="day-week">{{group.weekday}} · {{group.year}}</text></view>
+    <view class="day-events">
+      <view class="event card {{item.conflictKind}}" style="border-left: 6rpx solid {{item.color || '#6a59d7'}}" wx:for="{{group.events}}" wx:key="id" bindtap="toggleEvent" data-id="{{item.id}}">
+        <view class="event-top"><text class="event-time">{{item.timeLabel}}</text><text wx:if="{{item.conflictLabel}}" class="badge {{item.conflictKind}}">{{item.conflictLabel}}</text></view>
+        <view class="event-title">{{item.title}}</view>
+        <view class="event-actions"><text wx:if="{{item.edited}}" class="edited-badge">已手动修正</text><button class="edit-button" data-id="{{item.id}}" catchtap="editEvent">修正安排</button></view>
+        <view wx:if="{{item.shift && item.shift !== item.title}}" class="event-detail">班次 · {{item.shift}}</view>
+        <view wx:if="{{item.location}}" class="event-detail">地点 · {{item.location}}</view>
+        <view wx:for="{{item.notes}}" wx:for-item="note" wx:key="*this" class="event-note">{{note}}</view>
+        <view wx:for="{{item.warnings}}" wx:for-item="warning" wx:key="*this" class="event-warning">{{warning}}</view>
+        <view class="source-line"><text class="source-filename">{{item.filenameLabel}}</text><text class="source-expand">{{item.sourceCount > 1 ? item.sourceCount + ' 处来源 · ' : ''}}{{item.expanded ? '收起' : '来源详情'}}</text></view>
+        <view wx:if="{{item.expanded}}" class="evidence">
+          <view wx:for="{{item.sources}}" wx:for-item="source" wx:key="sourceKey" class="source-detail"><view>{{source.filename}} / {{source.sheet}}{{source.hidden ? '（隐藏表）' : ''}}</view><view>姓名位置：{{source.name_cell}}</view><view>{{source.evidenceText}}</view><view class="excerpt">{{source.excerpt}}</view></view>
+          <view wx:for="{{item.history}}" wx:for-item="revision" wx:key="key" class="source-detail"><view>修正前 · {{revision.title}}</view><view>{{revision.summary}}</view><view>{{revision.detail}}</view></view>
+          <view wx:if="{{item.relatedLabels.length}}" class="related"><view>关联安排</view><view wx:for="{{item.relatedLabels}}" wx:for-item="related" wx:key="*this">{{related}}</view></view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{pageCount > 1}}" class="pagination"><button class="secondary" disabled="{{pageIndex === 0}}" bindtap="changePage" data-delta="-1">上一页</button><text>{{pageIndex + 1}} / {{pageCount}}</text><button class="secondary" disabled="{{pageIndex + 1 >= pageCount}}" bindtap="changePage" data-delta="1">下一页</button></view>
+  </block><view wx:if="{{pendingCount}}" class="pending-section"><view class="section-title">待确认 · {{pendingCount}}</view><view class="muted">这些记录保留原始线索，确认前不计入正常时间线。</view>
+    <view wx:for="{{pending}}" wx:key="id" class="pending-card card"><view class="event-title">{{item.title}}</view><view wx:if="{{item.date}}" class="event-detail">{{item.date}} · {{item.timeLabel}}</view><view wx:for="{{item.warnings}}" wx:for-item="warning" wx:key="*this" class="event-warning">{{warning}}</view><view wx:for="{{item.sources}}" wx:for-item="source" wx:key="sourceKey" class="source-detail"><view>{{source.filename}} / {{source.sheet}} / {{source.name_cell}}</view><view>{{source.excerpt}}</view></view><button class="secondary confirm-button" data-id="{{item.id}}" bindtap="editEvent">补充并确认</button></view>
+    <view wx:if="{{pendingPageCount > 1}}" class="pagination"><button class="secondary" disabled="{{pendingPageIndex === 0}}" bindtap="changePage" data-section="pending" data-delta="-1">上一页</button><text>{{pendingPageIndex + 1}} / {{pendingPageCount}}</text><button class="secondary" disabled="{{pendingPageIndex + 1 >= pendingPageCount}}" bindtap="changePage" data-section="pending" data-delta="1">下一页</button></view>
+  </view>
+  <view class="diagnostics card"><view class="diagnostic-toggle" bindtap="toggleDiagnostics">文件检查结果<text>{{showDiagnostics ? '收起 −' : '展开 ＋'}}</text></view><view wx:if="{{showDiagnostics}}">
+    <view class="muted diagnostic-note">以下为原表识别时的记录，手动修正不改变原表统计。</view>
+    <view wx:for="{{files}}" wx:key="index" class="file-check"><view class="file-check-name">{{item.filename}}</view><view wx:if="{{item.status === 'error'}}" class="event-warning">{{item.error}}</view><view wx:for="{{item.sheets}}" wx:for-item="sheet" wx:key="sheet" class="muted">{{sheet.sheet}}：{{sheet.status === 'empty' ? '空表' : sheet.status === 'no_match' ? '未找到完整姓名' : sheet.events + ' 项安排，' + sheet.pending + ' 项待确认'}}{{sheet.hidden ? ' · 隐藏表' : ''}}</view></view>
+    <view wx:for="{{warnings}}" wx:key="*this" class="event-warning">{{item}}</view>
+  </view></view>
+  <button class="secondary back-button" bindtap="goBack">继续添加或调整文件</button>
+  <view class="result-footer">把表格交给星程，只看属于你的安排。</view>
+  </block>
+</view>

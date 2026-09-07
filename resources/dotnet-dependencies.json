@@ -1,0 +1,104 @@
+[
+  {
+    "name": "Microsoft.CSharp",
+    "version": "4.7.0",
+    "url": "https://api.nuget.org/v3-flatcontainer/microsoft.csharp/4.7.0/microsoft.csharp.4.7.0.nupkg",
+    "package_sha256": "127927bf646c145ebc9443ddadfe4cf81a55d641e82d3551029294c2e93fa63d",
+    "files": [
+      "resources/licenses/dotnet/Microsoft.CSharp/LICENSE.TXT",
+      "resources/licenses/dotnet/Microsoft.CSharp/THIRD-PARTY-NOTICES.TXT"
+    ]
+  },
+  {
+    "name": "Microsoft.SourceLink.GitHub",
+    "version": "10.0.300",
+    "url": "https://api.nuget.org/v3-flatcontainer/microsoft.sourcelink.github/10.0.300/microsoft.sourcelink.github.10.0.300.nupkg",
+    "package_sha256": "6ea24929af22808d1ead98d441264943de4b247b1cf5720c371199ddbdb47c5f",
+    "files": [
+      "resources/licenses/dotnet/Microsoft.SourceLink.GitHub/LICENSE.txt"
+    ]
+  },
+  {
+    "name": "System.Buffers",
+    "version": "4.6.1",
+    "url": "https://api.nuget.org/v3-flatcontainer/system.buffers/4.6.1/system.buffers.4.6.1.nupkg",
+    "package_sha256": "b00451e91d016fbec091ad1e361f3a7015e1d91d4047f7e48a74455b2a673d79",
+    "files": [
+      "resources/licenses/dotnet/NETStandard.Library/LICENSE.TXT"
+    ],
+    "license": "MIT",
+    "note": "NuGet uses the MIT license expression. The shared .NET Foundation MIT text is retained."
+  },
+  {
+    "name": "System.IO.Hashing",
+    "version": "10.0.8",
+    "url": "https://api.nuget.org/v3-flatcontainer/system.io.hashing/10.0.8/system.io.hashing.10.0.8.nupkg",
+    "package_sha256": "9ec0ccbc2bc078a0b2a79eba884ca9dc93967d09d33e00d4ddd205320d2250bd",
+    "files": [
+      "resources/licenses/dotnet/System.IO.Hashing/THIRD-PARTY-NOTICES.TXT"
+    ]
+  },
+  {
+    "name": "System.Memory",
+    "version": "4.6.3",
+    "url": "https://api.nuget.org/v3-flatcontainer/system.memory/4.6.3/system.memory.4.6.3.nupkg",
+    "package_sha256": "26078aeb758c9ae985e8bf851f973026061da6a5eb4837204d0c2d2204c72955",
+    "files": [
+      "resources/licenses/dotnet/NETStandard.Library/LICENSE.TXT"
+    ],
+    "license": "MIT",
+    "note": "NuGet uses the MIT license expression. The shared .NET Foundation MIT text is retained."
+  },
+  {
+    "name": "System.Numerics.Vectors",
+    "version": "4.6.1",
+    "url": "https://api.nuget.org/v3-flatcontainer/system.numerics.vectors/4.6.1/system.numerics.vectors.4.6.1.nupkg",
+    "package_sha256": "2bc500a86dcb02f2032d6d877f9e2d6e9e4a79080e57239b4198679d4031f2c7",
+    "files": [
+      "resources/licenses/dotnet/NETStandard.Library/LICENSE.TXT"
+    ],
+    "license": "MIT",
+    "note": "NuGet uses the MIT license expression. The shared .NET Foundation MIT text is retained."
+  },
+  {
+    "name": "System.Reflection.Emit",
+    "version": "4.7.0",
+    "url": "https://api.nuget.org/v3-flatcontainer/system.reflection.emit/4.7.0/system.reflection.emit.4.7.0.nupkg",
+    "package_sha256": "170fc24910fec1a8c7d4ca9f292dd0fec22b507ec63782be17e0f1ebc50f3488",
+    "files": [
+      "resources/licenses/dotnet/System.Reflection.Emit/LICENSE.TXT",
+      "resources/licenses/dotnet/System.Reflection.Emit/THIRD-PARTY-NOTICES.TXT"
+    ]
+  },
+  {
+    "name": "System.Reflection.Emit.ILGeneration",
+    "version": "4.7.0",
+    "url": "https://api.nuget.org/v3-flatcontainer/system.reflection.emit.ilgeneration/4.7.0/system.reflection.emit.ilgeneration.4.7.0.nupkg",
+    "package_sha256": "1949d0786a3f0edbd9550a459c4486abb949723077d3f2a70d8eca7761bf1251",
+    "files": [
+      "resources/licenses/dotnet/System.Reflection.Emit.ILGeneration/LICENSE.TXT",
+      "resources/licenses/dotnet/System.Reflection.Emit.ILGeneration/THIRD-PARTY-NOTICES.TXT"
+    ]
+  },
+  {
+    "name": "System.Runtime.CompilerServices.Unsafe",
+    "version": "6.1.2",
+    "url": "https://api.nuget.org/v3-flatcontainer/system.runtime.compilerservices.unsafe/6.1.2/system.runtime.compilerservices.unsafe.6.1.2.nupkg",
+    "package_sha256": "5f6a7f53af3465f92beb6da873ebe0e496206c313313b98badee4355a6b25937",
+    "files": [
+      "resources/licenses/dotnet/NETStandard.Library/LICENSE.TXT"
+    ],
+    "license": "MIT",
+    "note": "NuGet uses the MIT license expression. The shared .NET Foundation MIT text is retained."
+  },
+  {
+    "name": "NETStandard.Library",
+    "version": "2.0.3",
+    "url": "https://api.nuget.org/v3-flatcontainer/netstandard.library/2.0.3/netstandard.library.2.0.3.nupkg",
+    "package_sha256": "3eb87644f79bcffb3c0331dbdac3c7837265f2cdf58a7bfd93e431776f77c9ba",
+    "files": [
+      "resources/licenses/dotnet/NETStandard.Library/LICENSE.TXT",
+      "resources/licenses/dotnet/NETStandard.Library/THIRD-PARTY-NOTICES.TXT"
+    ]
+  }
+]

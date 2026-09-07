@@ -1,0 +1,1 @@
+.grid-preview { width:max-content; }.grid-row {display:flex}.grid-row text {display:block; width:220rpx; padding:8rpx; border:1rpx solid #eee; font-size:22rpx; white-space:normal; word-break:break-all;}

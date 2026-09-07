@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "files": [
+    {
+      "filename": "innosetup-6.7.3.exe",
+      "url": "https://github.com/jrsoftware/issrc/releases/download/is-6_7_3/innosetup-6.7.3.exe",
+      "sha256": "9c73c3bae7ed48d44112a0f48e66742c00090bdb5bef71d9d3c056c66e97b732",
+      "publisher": "Pyrsys B.V."
+    },
+    {
+      "url": "https://msedge.sf.dl.delivery.mp.microsoft.com/filestreamingservice/files/a8f5ad97-0b01-41e5-9245-e8fc9ba9b311/MicrosoftEdgeWebView2RuntimeInstallerX64.exe",
+      "sha256": "e7fa35755196ad9223596ef021a1ce6799509142eaa40ba35f634026be50b831",
+      "filename": "MicrosoftEdgeWebView2RuntimeInstallerX64.exe",
+      "publisher": "Microsoft Corporation"
+    }
+  ]
+}

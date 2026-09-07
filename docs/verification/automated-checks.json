@@ -1,0 +1,14 @@
+{
+  "date": "2026-09-08",
+  "python": {
+    "tests": 238,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "coverage_percent": 91.95,
+  "includes_branch_coverage": true,
+  "desktop_tests_passed": 6,
+  "legacy_node_tests_passed": 25,
+  "remote_ci_executed": false
+}

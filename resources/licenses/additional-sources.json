@@ -1,0 +1,31 @@
+{
+  "flatbuffers": {
+    "version": "25.12.19",
+    "file": "flatbuffers-LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/google/flatbuffers/v25.12.19/LICENSE",
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  "antlr4-python3-runtime": {
+    "version": "4.9.3",
+    "file": "antlr4-python3-runtime-LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/antlr/antlr4/4.9.3/LICENSE.txt",
+    "sha256": "b1b379fcaf3219593a4c433feb1b35c780bed23fafaae440b1ae2771a9521e3a"
+  },
+  "rapidocr": {
+    "version": "3.4.2",
+    "file": "RapidOCR-Apache-2.0.txt",
+    "url": "https://github.com/RapidAI/RapidOCR/blob/v3.4.2/LICENSE",
+    "sha256": "3e0af25fdd06aa9586ae97adb00ea927ebe5a3805ac77d2d3a81ce5f55693333"
+  },
+  "proxy-tools": {
+    "version": "0.1.0",
+    "file": "proxy-tools-LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/jtushman/proxy_tools/ccd35a569b95bec271a59890780c7821756c548a/LICENSE.txt",
+    "sha256": "a428fb8a2e762af3eb0a6edbbb88e9b42ccfee80fd9b423958bcacf9b9abbfe4",
+    "license": "BSD-3-Clause",
+    "note": "Wheel metadata says MIT; the upstream license and bundled module header specify BSD. Retain the upstream BSD notice.",
+    "additional_files": [
+      "Werkzeug-0.9.4-LICENSE.txt"
+    ]
+  }
+}

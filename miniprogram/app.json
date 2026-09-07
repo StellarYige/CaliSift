@@ -1,0 +1,14 @@
+{
+  "pages": ["pages/timeline/timeline", "pages/upload/upload", "pages/mine/mine", "pages/review/review", "pages/confirm/confirm", "pages/rules/rules", "pages/image/image"],
+  "tabBar": {"color":"#626b82", "selectedColor":"#6a59d7", "backgroundColor":"#ffffff", "list":[
+    {"pagePath":"pages/timeline/timeline", "text":"日程"}, {"pagePath":"pages/upload/upload", "text":"导入"}, {"pagePath":"pages/mine/mine", "text":"我的"}
+  ]},
+  "window": {
+    "navigationBarTitleText": "星程",
+    "navigationBarBackgroundColor": "#F6F7FC",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F6F7FC"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

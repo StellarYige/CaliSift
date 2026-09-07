@@ -1,0 +1,19 @@
+page { background: #f6f7fc; color: #222c49; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; font-size: 28rpx; }
+view, button, input, text, textarea, picker { box-sizing: border-box; }
+button { font-size: 28rpx; }
+button::after { border: 0; }
+.page { padding: 36rpx 36rpx 64rpx; padding-bottom: calc(64rpx + env(safe-area-inset-bottom)); }
+.eyebrow { font-size: 21rpx; letter-spacing: 5rpx; color: #7c8198; font-weight: 600; }
+.muted { color: #626b82; font-size: 24rpx; line-height: 1.7; }
+.primary { border-radius: 22rpx; color: white; background: #6a59d7; padding: 8rpx 24rpx; font-weight: 600; }
+.primary[disabled] { background: #b4aee0; color: #fff; }
+.secondary { border: 2rpx solid #e0dfef; border-radius: 20rpx; color: #6557b8; background: #fff; font-size: 26rpx; }
+.card { background: #fff; border: 1rpx solid #e9ebf4; border-radius: 28rpx; }
+.error { color: #b34343; background: #fff0ef; padding: 20rpx 24rpx; border-radius: 16rpx; font-size: 25rpx; line-height: 1.6; }
+.notice { color: #86612b; background: #fff6e6; padding: 20rpx 24rpx; border-radius: 16rpx; font-size: 24rpx; line-height: 1.6; }
+.panel { padding:28rpx; margin:24rpx 0; overflow:hidden; }
+.field { display:block; padding:20rpx 0; min-height:84rpx; height:auto; border-bottom:1rpx solid #eee; word-break:break-all; }
+.section-title {font-size:34rpx; font-weight:600; margin:24rpx 0;}
+.actions {display:flex; gap:16rpx; flex-wrap:wrap; margin:20rpx 0;}.actions button {flex:1; min-width:200rpx; margin:0;}
+.large {font-size:36rpx}.large .muted,.large button,.large .field {font-size:30rpx}.large .event-title {font-size:38rpx}.large .event-time {font-size:36rpx}
+input,textarea {max-width:100%;} .panel textarea {width:100%; min-height:180rpx; padding:16rpx; background:#f6f7fc;}

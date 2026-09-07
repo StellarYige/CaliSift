@@ -1,0 +1,33 @@
+<view class="page">
+  <view class="brand"><image class="brand-mark" src="/assets/star.svg" mode="aspectFit" /><text class="brand-name">星程</text><text class="brand-caption">属于你的每一天</text></view>
+  <view class="hero">
+    <view class="hero-title">把表格交给星程，</view>
+    <view class="hero-copy">只看属于你的安排。</view><view class="muted">排班、课程、培训、考试，一起看清；安排有变化，及时核对。</view>
+  </view>
+  <view wx:if="{{hasSaved}}" class="saved-card card"><view><view class="saved-title">{{savedName}}的最近日程</view><view class="muted">{{savedCount}} 项安排 · {{savedLocally ? '已保存在本机' : '仅当前会话可见'}}</view></view><button class="resume-button" bindtap="resume" disabled="{{busy}}">继续查看</button></view>
+  <view wx:if="{{persistenceError}}" class="notice storage-notice">{{persistenceError}}</view>
+  <view class="card form-card">
+    <view class="field-label"><text class="step">1</text>你叫什么名字？</view>
+    <input class="name-input" value="{{name}}" bindinput="onNameInput" maxlength="80" placeholder="例如：星辰奕歌" disabled="{{busy}}" />
+    <view class="muted name-tip">完整姓名，精确查找属于你的安排</view>
+    <picker range="{{templateSources}}" range-key="name" value="{{templateIndex || 0}}" bindchange="templateSource"><view class="field">{{templateSources[templateIndex || 0].name || '不使用来源模板'}} ▾</view></picker>
+    <view class="field-label second"><text class="step">2</text>选择你的表格<text class="file-count">{{files.length}} / 10</text></view>
+    <button class="upload-zone" bindtap="chooseFiles" disabled="{{busy}}">
+      <view class="upload-icon">＋</view><view class="upload-title">从微信聊天中选择文件</view>
+      <view class="muted">支持 XLSX、XLS、CSV，可多选</view>
+    </button>
+    <view class="actions"><button class="secondary" bindtap="chooseImage">从相册选择图片</button><button class="secondary" bindtap="chooseImage" data-camera="yes">拍照</button></view>
+    <view wx:for="{{files}}" wx:key="id" class="file-row">
+      <view class="file-icon">表</view>
+      <view class="file-info"><view class="file-name">{{item.name}}</view><view class="muted">{{item.sizeLabel}} · {{item.status === 'done' ? '整理完成' : item.status === 'error' ? '未完成' : item.status === 'parsing' ? '正在理解表格…' : item.status === 'uploading' ? '上传中 ' + item.progress + '%' : '等待整理'}}</view><view wx:if="{{item.error}}" class="file-error">{{item.error}}</view></view>
+      <button wx:if="{{!busy}}" class="remove" data-id="{{item.id}}" bindtap="removeFile" aria-label="移除文件">×</button>
+    </view>
+    <view class="year-row"><view><view class="year-label">表格没写年份时，使用</view><view class="muted">原表有年份时优先使用原表</view></view><input class="year-input" type="number" maxlength="4" value="{{year}}" bindinput="onYearInput" disabled="{{busy}}" /></view>
+    <view class="muted limits">每份不超过 10 MiB，合计不超过 30 MiB</view>
+  </view>
+  <view wx:if="{{error}}" class="error page-error">{{error}}</view>
+  <button class="primary submit" bindtap="start" loading="{{busy}}" disabled="{{busy}}">{{busy ? '正在整理你的安排' : hasErrors ? '重试未完成文件' : '生成我的时间线'}}<text wx:if="{{!busy}}"> →</text></button>
+  <button wx:if="{{hasSuccess && hasErrors}}" class="secondary partial" bindtap="showResults" disabled="{{busy}}">先查看已完成的结果</button>
+  <view class="footer-note"><view>核对并确认后加入本机日历，保留已有安排</view><view>每批最多 10 个文件，其中图片最多 5 张</view></view>
+  <view class="section-title">我的来源</view><view class="card panel" wx:for="{{sources}}" wx:key="id" data-id="{{item.id}}" bindtap="sourceRules"><view>{{item.name}}</view><view class="muted">保留 {{item.count}} 个导入版本 · 配置规则与模板 →</view></view>
+</view>

@@ -1,0 +1,21 @@
+{
+  "name": "calisift",
+  "version": "0.3.0-alpha.1",
+  "private": true,
+  "description": "CaliSift desktop and historical mini-program tests",
+  "scripts": {
+    "test": "node --test tests-js/*.test.js",
+    "smoke": "node scripts/smoke-mini.js",
+    "build:desktop": "npm --prefix desktop run build",
+    "test:desktop": "npm --prefix desktop test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "miniprogram-automator": "0.12.1"
+  },
+  "overrides": {
+    "jimp": "0.22.12"
+  }
+}

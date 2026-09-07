@@ -1,0 +1,35 @@
+{
+  "system": "Windows-10-10.0.26200-SP0",
+  "python": "3.11.9",
+  "records": 5000,
+  "create_seconds": 0.7446,
+  "queries": [
+    {
+      "options": {},
+      "total": 5000,
+      "seconds": 0.2982
+    },
+    {
+      "options": {},
+      "total": 5000,
+      "seconds": 0.0112
+    },
+    {
+      "options": {
+        "query": "公开性能"
+      },
+      "total": 5000,
+      "seconds": 0.0153
+    },
+    {
+      "options": {
+        "date_from": "2027-01-01",
+        "date_to": "2027-12-31"
+      },
+      "total": 365,
+      "seconds": 0.0053
+    }
+  ],
+  "preview_seconds": 1.1089,
+  "process_peak_working_set_mib": 100.5
+}
