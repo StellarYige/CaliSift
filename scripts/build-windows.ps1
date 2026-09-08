@@ -40,9 +40,6 @@ if ($LASTEXITCODE -ne 0) { throw 'Executable packaging failed.' }
 if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed.' }
 & $pythonPath -X utf8 -m scripts.package_models
 if ($LASTEXITCODE -ne 0) { throw 'Model repair packaging failed.' }
-$checksums = Get-ChildItem -LiteralPath artifacts/release -File | Where-Object {$_.Name -ne 'SHA256SUMS.txt'} | Sort-Object Name | ForEach-Object {
-    $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
-    "$hash  $($_.Name)"
-}
-[System.IO.File]::WriteAllLines((Join-Path (Get-Location) 'artifacts/release/SHA256SUMS.txt'), $checksums, [System.Text.UTF8Encoding]::new($false))
+& $pythonPath -X utf8 -m scripts.package_manifest
+if ($LASTEXITCODE -ne 0) { throw 'Release checksum generation failed.' }
 Write-Output 'Release assets are in artifacts/release. Run the native and installation smoke checks before publishing.'

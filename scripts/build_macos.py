@@ -1,6 +1,5 @@
 """Build on a native macOS runner; never cross-compile a claimed Mac release."""
 
-import hashlib
 import os
 from pathlib import Path
 import platform
@@ -48,14 +47,7 @@ def main():
         str(target),
     )
     run(sys.executable, "-m", "scripts.package_models")
-    sums = []
-    for path in sorted(release.iterdir()):
-        if path.is_file() and path.name != "SHA256SUMS.txt":
-            with path.open("rb") as f:
-                sums.append(
-                    hashlib.file_digest(f, "sha256").hexdigest() + "  " + path.name
-                )
-    (release / "SHA256SUMS.txt").write_text("\n".join(sums) + "\n", encoding="utf-8")
+    run(sys.executable, "-m", "scripts.package_manifest")
 
 
 if __name__ == "__main__":

@@ -155,7 +155,7 @@ def main():
             wait(lambda: target.is_file())
             assert target.read_text(encoding="utf-8").count("BEGIN:VEVENT") == 4
             result["checks"].append("native save dialog wrote 4 ICS events")
-            click("导入工作台")
+            click("导入")
             click("选择文件")
             dialog_file(Path("tests/fixtures/ocr/clean.png"))
             click("开始识别")
@@ -176,7 +176,7 @@ def main():
                 },
                 creationflags=subprocess.CREATE_NO_WINDOW,
             )
-            click("安排预览")
+            click("安排")
             assert event_ids() == saved_ids
             result["checks"].append(
                 "five stable event IDs retained after native application restart"

@@ -1,0 +1,39 @@
+name: 表格或图片布局支持 / Layout support
+description: 提交可公开的脱敏样本，帮助改进识别与规则模板。
+title: '[Layout] '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: '请仅提交你有权公开的样本。把姓名替换为“星辰奕歌”，移除其他人的姓名、单位、联系方式和隐藏工作表数据。模糊真实姓名可能影响 OCR；请保留与问题相关的布局。'
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 输入类型
+      options: [Excel / CSV, 清晰截图, 实际拍照, 其他]
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 样本、当前结果与期望结果
+      description: 附上可公开文件；写出应提取的日期、事项、时间，以及对应的姓名格和日期格。不要上传完整个人工作区备份。
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: CaliSift 版本、系统与架构
+      description: 可使用设置中的“复制诊断信息”；不包含姓名、日程或文件路径。
+  - type: textarea
+    id: permission
+    attributes:
+      label: 来源、授权与是否允许纳入公开测试集
+      description: 例如“我自行制作，允许按 Apache-2.0 收录”；公开网页请附来源及明确许可。
+    validations:
+      required: true
+  - type: textarea
+    id: corrections
+    attributes:
+      label: 需要的手动修正
+      description: 记录修改了几条文字、日期或时间，以及用过的布局映射或班次规则。

@@ -1,0 +1,237 @@
+{
+  "split": "development",
+  "independent_review": false,
+  "description": "Five development cases across three layout families; explicit expected values authored separately from parsing.",
+  "cases": [
+    {
+      "id": "annotated-headers",
+      "file": "annotated-headers.csv",
+      "kind": "table",
+      "layout": "records",
+      "provenance": "synthetic",
+      "license": "Apache-2.0",
+      "name": "星辰奕歌",
+      "year": 2026,
+      "identity_cells": [
+        {
+          "sheet": "CSV",
+          "cell": "B2"
+        }
+      ],
+      "expected": [
+        {
+          "date": "2026-09-08",
+          "title": "消防培训",
+          "start": "08:00",
+          "end": "10:00",
+          "end_date": "2026-09-08",
+          "location": "",
+          "anchors": [
+            {
+              "sheet": "CSV",
+              "name_cell": "B2",
+              "evidence": {
+                "date": "A2"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "names-in-rows",
+      "file": "names-in-rows.csv",
+      "kind": "table",
+      "layout": "names-rows",
+      "provenance": "synthetic",
+      "license": "Apache-2.0",
+      "name": "星辰奕歌",
+      "year": 2026,
+      "identity_cells": [
+        {
+          "sheet": "CSV",
+          "cell": "A2"
+        }
+      ],
+      "expected": [
+        {
+          "date": "2026-09-08",
+          "title": "早班",
+          "start": "08:00",
+          "end": "16:00",
+          "end_date": "2026-09-08",
+          "location": "",
+          "anchors": [
+            {
+              "sheet": "CSV",
+              "name_cell": "A2",
+              "evidence": {
+                "date": "B1"
+              }
+            }
+          ]
+        },
+        {
+          "date": "2026-09-09",
+          "title": "夜班",
+          "start": "22:00",
+          "end": "06:00",
+          "end_date": "2026-09-10",
+          "location": "",
+          "anchors": [
+            {
+              "sheet": "CSV",
+              "name_cell": "A2",
+              "evidence": {
+                "date": "C1"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "names-in-columns",
+      "file": "names-in-columns.csv",
+      "kind": "table",
+      "layout": "names-columns",
+      "provenance": "synthetic",
+      "license": "Apache-2.0",
+      "name": "星辰奕歌",
+      "year": 2026,
+      "identity_cells": [
+        {
+          "sheet": "CSV",
+          "cell": "B1"
+        }
+      ],
+      "expected": [
+        {
+          "date": "2026-09-08",
+          "title": "早班",
+          "start": "08:00",
+          "end": "16:00",
+          "end_date": "2026-09-08",
+          "location": "",
+          "anchors": [
+            {
+              "sheet": "CSV",
+              "name_cell": "B1",
+              "evidence": {
+                "date": "A2"
+              }
+            }
+          ]
+        },
+        {
+          "date": "2026-09-09",
+          "title": "休息",
+          "start": null,
+          "end": null,
+          "end_date": null,
+          "location": "",
+          "anchors": [
+            {
+              "sheet": "CSV",
+              "name_cell": "B1",
+              "evidence": {
+                "date": "A3"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "repeated-records",
+      "file": "repeated-records.csv",
+      "kind": "table",
+      "layout": "records",
+      "provenance": "synthetic",
+      "license": "Apache-2.0",
+      "name": "星辰奕歌",
+      "year": 2026,
+      "identity_cells": [
+        {
+          "sheet": "CSV",
+          "cell": "B2"
+        },
+        {
+          "sheet": "CSV",
+          "cell": "B5"
+        }
+      ],
+      "expected": [
+        {
+          "date": "2026-09-08",
+          "title": "考试",
+          "start": "09:00",
+          "end": "11:00",
+          "end_date": "2026-09-08",
+          "location": "",
+          "anchors": [
+            {
+              "sheet": "CSV",
+              "name_cell": "B2",
+              "evidence": {
+                "date": "A2"
+              }
+            }
+          ]
+        },
+        {
+          "date": "2026-09-09",
+          "title": "考试",
+          "start": "14:00",
+          "end": "16:00",
+          "end_date": "2026-09-09",
+          "location": "",
+          "anchors": [
+            {
+              "sheet": "CSV",
+              "name_cell": "B5",
+              "evidence": {
+                "date": "A5"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "start-only-course",
+      "file": "start-only-course.csv",
+      "kind": "table",
+      "layout": "records",
+      "provenance": "synthetic",
+      "license": "Apache-2.0",
+      "name": "星辰奕歌",
+      "year": 2026,
+      "identity_cells": [
+        {
+          "sheet": "CSV",
+          "cell": "C2"
+        }
+      ],
+      "expected": [
+        {
+          "date": "2026-09-08",
+          "title": "数学",
+          "start": "08:00",
+          "end": null,
+          "end_date": null,
+          "location": "301",
+          "anchors": [
+            {
+              "sheet": "CSV",
+              "name_cell": "C2",
+              "evidence": {
+                "date": "A2"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

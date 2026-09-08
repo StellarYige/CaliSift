@@ -42,9 +42,12 @@ def main():
         dist = metadata.distribution(name)
         texts = []
         for file in dist.files or []:
-            if "notice" in file.name.lower() or any(
-                file.name.lower().startswith(key)
-                for key in ("license", "licence", "copying", "notice")
+            if file.name.lower() in ("license", "licence", "copying", "notice") or (
+                file.suffix.lower() in (".txt", ".md", ".rst", ".html")
+                and any(
+                    file.name.lower().startswith(key)
+                    for key in ("license", "licence", "copying", "notice")
+                )
             ):
                 source = Path(dist.locate_file(file))
                 if not source.is_file():

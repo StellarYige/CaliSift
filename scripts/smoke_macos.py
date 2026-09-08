@@ -47,14 +47,14 @@ def main():
             dict(kind=kind, seconds=round(time.monotonic() - started, 3), events=count)
         )
     output = Path("artifacts/macos-ui.json").resolve()
-    subprocess.run(
+    launch = subprocess.run(
         [str(executable), "--self-check"],
         env={**env, "CALISIFT_CHECK_OUTPUT": str(output)},
-        check=True,
+        check=False,
         timeout=120,
     )
     ui = json.loads(output.read_text(encoding="utf-8"))
-    assert ui["success"]
+    assert launch.returncode == 0 and ui["success"], ui
     result = dict(
         system=platform.platform(),
         architecture=platform.machine(),

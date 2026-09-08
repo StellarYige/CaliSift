@@ -67,6 +67,10 @@ def run():
                 result["reopen_persistence"] = True
             except Exception as error:
                 result["error"] = str(error)
+                result["ui_state"] = window.evaluate_js(
+                    "({url:location.href,title:document.title,text:document.body.innerText,bridge:!!window.pywebview})"
+                )
+                result["native_capabilities"] = bridge.call("capabilities")
             finally:
                 output.parent.mkdir(parents=True, exist_ok=True)
                 output.write_text(
