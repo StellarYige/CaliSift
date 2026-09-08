@@ -6,7 +6,7 @@ import EventForm from "./EventForm.vue";
 import Modal from "./Modal.vue";
 import ChangePreview from "./ChangePreview.vue";
 const props = defineProps<{ workspace: any }>(),
-  emit = defineEmits(["refresh"]);
+  emit = defineEmits(["refresh", "export"]);
 const { run, busy, notify } = useActions();
 const result = ref<any>({ items: [], total: 0, page: 0, conflicts: 0 }),
   query = ref(""),
@@ -67,7 +67,8 @@ async function loadMonth() {
 }
 const cells = computed(() => {
   const first = new Date(month.value + "-01T00:00:00Z");
-  const offset = (first.getUTCDay() + 6) % 7;
+  const offset =
+    (first.getUTCDay() - (props.workspace.settings.week_start ?? 1) + 7) % 7;
   return Array.from({ length: 42 }, (_, i) => {
     const day = new Date(first);
     day.setUTCDate(i - offset + 1);
@@ -97,6 +98,7 @@ async function save(values: any) {
         : { type: "manual", values },
     );
     editing.value = null;
+    await commit();
   });
 }
 async function commit() {
@@ -158,6 +160,11 @@ watch([month, display], () => {
 </script>
 <template>
   <section class="page-stack">
+    <div class="button-row">
+      <button class="primary" @click="emit('export')">
+        导出日历 / 查看导出记录
+      </button>
+    </div>
     <div class="page-heading">
       <div>
         <p class="eyebrow">核对日期，找回每条安排的来处</p>
@@ -186,12 +193,12 @@ watch([month, display], () => {
         </option></select
       ><select v-model="category" aria-label="分类">
         <option value="">全部分类</option>
-        <option>工作</option>
-        <option>学习</option>
-        <option>培训</option>
-        <option>考试</option>
-        <option>休息</option>
-        <option>其他</option></select
+        <option
+          v-for="category in workspace.settings.categories"
+          :key="category.name"
+        >
+          {{ category.name }}
+        </option></select
       ><select v-model="view" aria-label="显示范围">
         <option value="active">当前安排</option>
         <option value="hidden">已隐藏</option>
@@ -312,7 +319,9 @@ watch([month, display], () => {
       </div>
       <div class="month-week">
         <span
-          v-for="day in ['一', '二', '三', '四', '五', '六', '日']"
+          v-for="day in workspace.settings.week_start === 0
+            ? ['日', '一', '二', '三', '四', '五', '六']
+            : ['一', '二', '三', '四', '五', '六', '日']"
           :key="day"
           >星期{{ day }}</span
         >

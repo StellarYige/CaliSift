@@ -13,7 +13,7 @@ from xingcheng.modelpack import resources
 for filename in resources():
     data.append((str(root / 'models/ocr' / filename), 'models/ocr'))
 data += copy_metadata('rapidocr') + copy_metadata('onnxruntime') + copy_metadata('pywebview')
-data.append((str(root/'artifacts/release/CaliSift-third-party-source-0.3.0-alpha.1.zip'), 'licenses'))
+data.append((str(root/'artifacts/release/CaliSift-third-party-source-0.3.0-alpha.2.zip'), 'licenses'))
 for manifest in ('models.json','dependencies.json','dotnet-dependencies.json','corresponding-source.json','windows-toolchain.json'):
     data.append((str(root/'resources'/manifest), 'licenses'))
 a = Analysis([str(root / 'packaging' / entry) for entry in ('desktop_entry.py','worker_entry.py','cli_entry.py')],

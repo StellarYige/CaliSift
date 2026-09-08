@@ -1,4 +1,4 @@
-#define AppVersion "0.3.0-alpha.1"
+#define AppVersion "0.3.0-alpha.2"
 [Setup]
 AppId={{BF44D1E4-0583-4201-8966-C19733FC8EE2}
 AppName=CaliSift

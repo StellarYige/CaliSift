@@ -97,11 +97,9 @@ def execute(args):
             options = read_json(args.options)
             rules = read_json(args.rules)
             options["layout_hint"] = rules.get("template")
-            command = (
-                [str(Path(sys.executable).parent / "calisift-worker.exe")]
-                if getattr(sys, "frozen", False)
-                else [sys.executable, "-m", "xingcheng.desktop_worker"]
-            )
+            from .platforms import worker_command
+
+            command = worker_command()
             request = dict(
                 kind="ocr",
                 path=str(Path(args.file).resolve()),

@@ -6,8 +6,12 @@ import Modal from "./Modal.vue";
 import EventForm from "./EventForm.vue";
 import CropImage from "./CropImage.vue";
 import ChangePreview from "./ChangePreview.vue";
+import DraftList from "./DraftList.vue";
+import SourceTable from "./SourceTable.vue";
+import UpdateMatching from "./UpdateMatching.vue";
+import { useJobPolling } from "../useJobPolling";
 const props = defineProps<{ workspace: any; jobId?: string }>();
-const emit = defineEmits(["refresh", "job"]);
+const emit = defineEmits(["refresh", "job", "export"]);
 const { run, busy, notify } = useActions();
 const job = ref<any>(null),
   jobs = ref<any[]>([]),
@@ -66,6 +70,12 @@ const entries = computed<any[]>(() => [
   ...(job.value?.report?.events || []),
   ...(job.value?.report?.pending || []),
 ]);
+const onlyPending = ref(false);
+const visibleEntries = computed(() =>
+  entries.value
+    .map((event, index) => ({ event, index }))
+    .filter(({ event }) => !onlyPending.value || event.status === "pending"),
+);
 const running = computed(() =>
   ["queued", "running"].includes(job.value?.status),
 );
@@ -198,22 +208,6 @@ async function start(retry?: string[]) {
     });
     checked.value = [];
   });
-}
-async function poll() {
-  if (!running.value || polling) return;
-  polling = true;
-  try {
-    const previous = job.value.status;
-    job.value = await call("get_job", { job_id: job.value.id });
-    if (previous !== job.value.status && !running.value) {
-      await loadFile();
-      await refreshJobs();
-    }
-  } catch (e: any) {
-    notify(e.message, true);
-  } finally {
-    polling = false;
-  }
 }
 function operation() {
   return {
@@ -413,15 +407,30 @@ watch([mode, sourceId, from, to], () => {
   cancellations.value = [];
   corrections.value = {};
 });
-timer = setInterval(poll, 900);
-onUnmounted(() => {
-  if (timer) clearInterval(timer);
-});
+useJobPolling(
+  job,
+  async () => {
+    await loadFile();
+    await refreshJobs();
+  },
+  notify,
+);
 defineExpose({ accept, resume });
 </script>
 
 <template>
   <section class="page-stack">
+    <ol class="import-steps" aria-label="导入步骤">
+      <li :class="{ active: !job }">1 选择文件</li>
+      <li :class="{ active: job && job.status !== 'committed' }">
+        2 识别与核对
+      </li>
+      <li :class="{ active: job?.status === 'committed' }">3 确认保存</li>
+    </ol>
+    <div v-if="job?.status === 'committed'" class="notice">
+      <b>安排已保存。</b
+      ><button class="primary" @click="emit('export')">继续导出日历</button>
+    </div>
     <div class="page-heading">
       <div>
         <p class="eyebrow">属于你的安排，清楚地放在一起</p>
@@ -479,7 +488,8 @@ defineExpose({ accept, resume });
       </aside>
     </div>
     <template v-else
-      ><div class="card import-config">
+      ><details class="card import-config" :open="mode === 'update'">
+        <summary>来源、年份与模板（需要时调整）</summary>
         <div class="form-grid four">
           <label
             >导入方式<select v-model="mode" :disabled="running">
@@ -524,37 +534,38 @@ defineExpose({ accept, resume });
             >覆盖结束日期<input v-model="to" type="date"
           /></label>
         </div>
-        <div class="toolbar">
-          <button class="primary" @click="start()" :disabled="busy || running">
-            {{ job.report ? "重新识别全部" : "开始识别" }}</button
-          ><button
-            v-if="running"
-            class="secondary"
-            @click="
-              run(async () => {
-                job = await call('cancel_job', { job_id: job.id });
-              })
-            "
-          >
-            取消识别</button
-          ><span v-if="running" class="processing">正在处理文件，请稍候…</span
-          ><span v-else class="muted"
-            >重新识别会重建当前草稿；正式日历保持原样。</span
-          ><button
-            class="text-button push-right"
-            @click="
-              run(async () => {
-                await call('discard_job', { job_id: job.id });
-                job = null;
-                await refreshJobs();
-              })
-            "
-            :disabled="busy"
-          >
-            丢弃本次导入
-          </button>
-        </div>
+      </details>
+      <div class="toolbar">
+        <button class="primary" @click="start()" :disabled="busy || running">
+          {{ job.report ? "重新识别全部" : "开始识别" }}</button
+        ><button
+          v-if="running"
+          class="secondary"
+          @click="
+            run(async () => {
+              job = await call('cancel_job', { job_id: job.id });
+            })
+          "
+        >
+          取消识别</button
+        ><span v-if="running" class="processing">正在处理文件，请稍候…</span
+        ><span v-else class="muted"
+          >重新识别会重建当前草稿；正式日历保持原样。</span
+        ><button
+          class="text-button push-right"
+          @click="
+            run(async () => {
+              await call('discard_job', { job_id: job.id });
+              job = null;
+              await refreshJobs();
+            })
+          "
+          :disabled="busy"
+        >
+          丢弃本次导入
+        </button>
       </div>
+
       <div class="file-tabs">
         <button
           v-for="file in job.files"
@@ -664,56 +675,16 @@ defineExpose({ accept, resume });
                 保存模板
               </button>
             </div>
-            <div class="table-scroll">
-              <table class="source-table">
-                <tbody>
-                  <tr v-for="(line, i) in table.cells" :key="i">
-                    <th>{{ table.row + i + 1 }}</th>
-                    <td
-                      v-for="cell in line"
-                      :key="cell.col"
-                      :class="{
-                        highlight: locate.includes(cell.coordinate),
-                        pickable: mappingOpen,
-                      }"
-                      @click="mapCell(cell)"
-                      :title="cell.coordinate + ' · ' + cell.text"
-                    >
-                      <span class="cell-coordinate">{{ cell.coordinate }}</span
-                      >{{ cell.text || " " }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="pagination">
-              <button
-                @click="
-                  run(() => tablePage(Math.max(0, table.row - 50), table.col))
-                "
-                :disabled="!table.row"
-              >
-                ↑ 上 50 行</button
-              ><button
-                @click="run(() => tablePage(table.row + 50, table.col))"
-                :disabled="table.row + 50 >= table.sheets[sheetIndex].height"
-              >
-                ↓ 下 50 行</button
-              ><button
-                @click="
-                  run(() => tablePage(table.row, Math.max(0, table.col - 20)))
-                "
-                :disabled="!table.col"
-              >
-                ←</button
-              ><button
-                @click="run(() => tablePage(table.row, table.col + 20))"
-                :disabled="table.col + 20 >= table.sheets[sheetIndex].width"
-              >
-                →
-              </button>
-            </div></template
-          >
+            <SourceTable
+              :table="table"
+              :sheet-index="sheetIndex"
+              :locate="locate"
+              :mapping-open="mappingOpen"
+              @pick="mapCell"
+              @page="
+                (row: number, col: number) => run(() => tablePage(row, col))
+              "
+          /></template>
           <template v-else-if="image"
             ><CropImage
               :src="image"
@@ -761,84 +732,17 @@ defineExpose({ accept, resume });
             ><p v-if="!entries.length" class="notice warning">
               没有提取出本人的安排。请检查姓名是否与原文完全一致，或校正表格布局后重新识别。
             </p>
-            <div class="draft-summary">
-              <label class="check"
-                ><input
-                  type="checkbox"
-                  :checked="
-                    checked.length === entries.length && entries.length > 0
-                  "
-                  @change="
-                    checked =
-                      checked.length === entries.length
-                        ? []
-                        : entries.map((_, i) => i)
-                  "
-                />选择全部</label
-              ><span
-                >{{ job.report.events.length }} 项已提取 ·
-                {{ job.report.pending.length }} 项待确认</span
-              >
-            </div>
-            <div class="draft-list">
-              <article
-                v-for="(entry, i) in entries.slice(page * 50, (page + 1) * 50)"
-                :key="page * 50 + i"
-                class="event-row"
-              >
-                <input
-                  v-model="checked"
-                  type="checkbox"
-                  :value="page * 50 + i"
-                  :aria-label="'选择 ' + entry.title"
-                />
-                <div class="event-body" @click="showEvidence(entry)">
-                  <div class="event-date">
-                    {{ entry.date || "日期待确认" }}
-                    <span
-                      v-if="entry.status === 'pending'"
-                      class="badge warning"
-                      >待确认</span
-                    >
-                  </div>
-                  <h3>{{ entry.title }}</h3>
-                  <p>
-                    {{ entry.all_day ? "全天" : entry.start || "时间未注明"
-                    }}{{ entry.end ? " — " + entry.end : "" }}
-                    <span v-if="entry.end_date && entry.end_date !== entry.date"
-                      >（次日）</span
-                    >
-                  </p>
-                  <small>{{ entry.location || "地点未注明" }}</small>
-                  <p
-                    v-for="warning in entry.warnings"
-                    :key="warning"
-                    class="field-warning"
-                  >
-                    {{ warning }}
-                  </p>
-                </div>
-                <button
-                  class="text-button"
-                  @click="
-                    editIndex = page * 50 + i;
-                    editing = entry;
-                  "
-                >
-                  修正
-                </button>
-              </article>
-            </div>
-            <div class="pagination" v-if="entries.length > 50">
-              <button @click="page--" :disabled="page === 0">上一页</button
-              ><span>{{ page + 1 }} / {{ Math.ceil(entries.length / 50) }}</span
-              ><button
-                @click="page++"
-                :disabled="(page + 1) * 50 >= entries.length"
-              >
-                下一页
-              </button>
-            </div>
+            <DraftList
+              :entries="entries"
+              v-model:checked="checked"
+              @evidence="showEvidence"
+              @edit="
+                (index: number) => {
+                  editIndex = index;
+                  editing = entries[index];
+                }
+              "
+            />
             <p
               v-for="warning in job.report.warnings"
               :key="warning"
@@ -863,55 +767,14 @@ defineExpose({ accept, resume });
           >
         </section>
       </div>
-      <section
+      <UpdateMatching
         v-if="preview && preview.summary.unresolved.length"
-        class="card update-matching"
-      >
-        <h2>核对新版与旧安排</h2>
-        <p class="muted">
-          只有你明确选定的旧安排会作为变更对应；完全相同的记录已自动对应。
-        </p>
-        <input
-          v-model="oldSearch"
-          placeholder="按旧事项或日期筛选候选（最多显示 200 项）"
-        />
-        <div
-          v-for="added in preview.summary.added"
-          :key="added.draft_index"
-          class="mapping-row"
-        >
-          <span>{{ added.date }} {{ added.title }} {{ added.start }}</span
-          ><select v-model="mappings[String(added.draft_index)]">
-            <option value="">作为新增安排</option>
-            <option v-for="old in candidates" :key="old.id" :value="old.id">
-              {{ old.date }} {{ old.title }} {{ old.start }}
-            </option>
-          </select>
-        </div>
-        <label
-          v-for="old in preview.summary.cancelled"
-          :key="old.id"
-          class="check cancellation"
-          ><input
-            type="checkbox"
-            v-model="cancellations"
-            :value="old.id"
-          />确认取消：{{ old.date }} {{ old.title }} {{ old.start }}</label
-        >
-        <div
-          v-for="conflict in preview.summary.correction_conflicts"
-          :key="conflict.id"
-          class="mapping-row"
-        >
-          <span>个人修正与新版冲突：{{ conflict.fields.join("、") }}</span
-          ><select v-model="corrections[conflict.id]">
-            <option value="">请选择</option>
-            <option value="keep">保留个人修正</option>
-            <option value="new">采用新版</option>
-          </select>
-        </div>
-        <button class="primary" @click="makePreview">重新预览</button>
-      </section>
+        :preview="preview"
+        v-model:mappings="mappings"
+        v-model:cancellations="cancellations"
+        v-model:corrections="corrections"
+        @preview="makePreview"
+      />
     </template>
     <section class="card recent-imports">
       <header class="panel-heading">

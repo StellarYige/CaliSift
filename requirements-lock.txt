@@ -52,6 +52,13 @@ pytest==9.0.2
 python-multipart==0.0.22
 pythonnet==3.1.0; sys_platform == 'win32'
 pywebview==6.2.1
+pyobjc-core==12.2.2; sys_platform == 'darwin'
+pyobjc-framework-Cocoa==12.2.2; sys_platform == 'darwin'
+pyobjc-framework-Quartz==12.2.2; sys_platform == 'darwin'
+pyobjc-framework-WebKit==12.2.2; sys_platform == 'darwin'
+pyobjc-framework-Security==12.2.2; sys_platform == 'darwin'
+pyobjc-framework-UniformTypeIdentifiers==12.2.2; sys_platform == 'darwin'
+macholib==1.16.4; sys_platform == 'darwin'
 pywin32-ctypes==0.2.3; sys_platform == 'win32'
 PyYAML==6.0.3
 rapidocr==3.4.2

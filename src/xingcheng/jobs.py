@@ -181,10 +181,9 @@ class JobManager:
     def run_worker(self, request, cancel_key=None, timeout=None):
         kind = request["kind"]
         timeout = timeout or (90 if kind == "ocr" else 20)
-        if getattr(sys, "frozen", False):
-            command = [str(Path(sys.executable).parent / "calisift-worker.exe")]
-        else:
-            command = [sys.executable, "-m", "xingcheng.desktop_worker"]
+        from .platforms import worker_command
+
+        command = worker_command()
         process = subprocess.Popen(
             command,
             stdin=subprocess.PIPE,

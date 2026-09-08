@@ -49,6 +49,7 @@ class Application:
             timezone="Asia/Shanghai",
             workspaces=self.store.workspaces(),
             data_path=str(self.store.root),
+            device=self.store.device_preferences(),
             limits=dict(
                 files=10, images=5, file_mib=10, batch_mib=30, pixels=12_000_000
             ),
@@ -74,7 +75,13 @@ class Application:
             )
             for s in calendar["sources"]
         ]
-        workspace["settings"] = calendar["settings"]
+        prefs = self.store.preferences(workspace_id)
+        workspace["preferences"] = prefs
+        workspace["settings"] = {
+            **prefs["values"],
+            "large_text": prefs["values"]["font_size"] > 14,
+            "colors": {c["name"]: c["color"] for c in prefs["values"]["categories"]},
+        }
         workspace["can_undo"] = bool(calendar.get("undo"))
         workspace["count"] = len(calendar["events"])
         workspace["active_count"] = sum(
@@ -169,9 +176,23 @@ class Application:
             self.store.put("job", job_id, job["workspace_id"], job)
             return self.jobs.public(job)
 
-    def course_draft(self, workspace_id, course, semester):
+    def course_draft(self, workspace_id, course=None, semester=None, courses=None):
         self.store.workspace(workspace_id)
-        report = expand_course(course, semester)
+        if courses is not None and course is not None:
+            raise ValueError("请使用单课程或批量课程中的一种输入")
+        selected = courses if courses is not None else [course]
+        if not isinstance(selected, list) or not 1 <= len(selected) <= 100:
+            raise ValueError("每次请填写 1–100 门课程")
+        reports = [expand_course(item, semester) for item in selected]
+        report = dict(
+            events=[e for r in reports for e in r["events"]],
+            pending=[],
+            files=[],
+            warnings=[],
+            conflicts=[],
+        )
+        if len(report["events"]) > 5000:
+            raise ValueError("展开结果超过 5000 条，请缩小课程范围")
         jid = identity()
         job = dict(
             id=jid,
@@ -186,7 +207,46 @@ class Application:
             report=report,
         )
         self.store.put("job", jid, workspace_id, job)
+        self.store.put("semester", workspace_id, workspace_id, semester)
         return self.jobs.public(job)
+
+    def get_preferences(self, workspace_id):
+        return self.store.preferences(workspace_id)
+
+    def save_preferences(self, workspace_id, expected_revision, values):
+        return self.store.save_preferences(workspace_id, expected_revision, values)
+
+    def device_preferences(self, values=None):
+        return (
+            self.store.save_device_preferences(values)
+            if values is not None
+            else self.store.device_preferences()
+        )
+
+    def last_semester(self, workspace_id):
+        self.store.workspace(workspace_id)
+        values = self.store.documents("semester", workspace_id)
+        return values[0] if values else None
+
+    def delete_template(self, template_id):
+        self.store.document("template", template_id)
+        self.store.delete("template", template_id)
+        return True
+
+    def diagnostics(self):
+        import platform
+        from .ocr import readiness
+
+        result = readiness()
+        return dict(
+            version=__version__,
+            system=platform.system(),
+            release=platform.release(),
+            architecture=platform.machine(),
+            python=platform.python_version(),
+            database_schema=2,
+            ocr_ready=result["ready"],
+        )
 
     @staticmethod
     def _calendar_report(report):
@@ -342,6 +402,7 @@ class Application:
     ):
         snapshot = self._event_view(workspace_id)
         calendar = snapshot["calendar"]
+        preferences = self.store.preferences(workspace_id)["values"]
         sources = {s["id"]: s["name"] for s in calendar["sources"]}
         matches = []
         conflicts = snapshot["conflicts"]
@@ -363,7 +424,7 @@ class Application:
                 continue
             if (
                 view == "active"
-                and calendar["settings"].get("hide_rest")
+                and preferences.get("hide_rest")
                 and event["category"] == "休息"
             ):
                 continue
@@ -412,6 +473,8 @@ class Application:
         if not name or len(name) > 100 or len(description) > 2000:
             raise LocalError("INVALID_INPUT", "请填写有效模板名称和说明")
         rules = validate_rules(rules)
+        if template_id:
+            self.store.document("template", template_id)
         value = dict(
             format="calisift.template",
             version=1,
@@ -651,6 +714,13 @@ class Application:
         payload = deepcopy(self.restore_tokens[token])
         calendar = payload["calendar"]
         # Validate all ancillary data before writing a single workspace row.
+        from .preferences import Preferences, from_legacy
+
+        prefs = Preferences.model_validate(
+            payload.get("preferences", from_legacy(calendar.get("settings", {})))
+        ).model_dump()
+        if payload.get("semester"):
+            validate_rules({"semester": payload["semester"]})
         for template in payload.get("templates", []):
             validate_rules(template["rules"])
         with self.store.lock:
@@ -703,6 +773,15 @@ class Application:
                         ),
                     )
                 self.store._index(db, wid, calendar)
+                self.store._put(
+                    db, "preferences", wid, wid, dict(revision=0, values=prefs)
+                )
+                db.execute(
+                    "DELETE FROM documents WHERE kind='semester' AND workspace=?",
+                    (wid,),
+                )
+                if payload.get("semester"):
+                    self.store._put(db, "semester", wid, wid, payload["semester"])
                 profile_ids = {
                     item["id"]: identity() for item in payload.get("profiles", [])
                 }

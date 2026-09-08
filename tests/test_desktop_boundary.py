@@ -306,7 +306,7 @@ def test_window_lifecycle_restricts_navigation_and_routes_native_drop(
             self.handlers.append(handler)
             return self
 
-    events = SimpleNamespace(loaded=Event(), closed=Event())
+    events = SimpleNamespace(loaded=Event(), closed=Event(), resized=Event())
     document = SimpleNamespace(events=SimpleNamespace(dragover=Event(), drop=Event()))
     core = Mock()
     native = SimpleNamespace(

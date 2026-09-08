@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, provide, nextTick, watch } from "vue";
+import { ref, provide, nextTick, watch, computed } from "vue";
 import { call, whenReady } from "./bridge";
 import ImportPane from "./components/ImportPane.vue";
 import EventsPane from "./components/EventsPane.vue";
@@ -7,6 +7,7 @@ import SourcesPane from "./components/SourcesPane.vue";
 import RulesPane from "./components/RulesPane.vue";
 import ExportPane from "./components/ExportPane.vue";
 import SettingsPane from "./components/SettingsPane.vue";
+import { defaultCategories } from "./types";
 const capabilities = ref<any>(null),
   workspace = ref<any>(null),
   page = ref("import"),
@@ -25,20 +26,34 @@ function notify(message: string, isError = false) {
   toastTimer = setTimeout(() => (toast.value = ""), isError ? 15000 : 6000);
 }
 provide("notify", notify);
+const importTab = ref("task");
+provide(
+  "categories",
+  computed(() => workspace.value?.settings.categories || defaultCategories),
+);
 const nav = [
-  { id: "import", icon: "⇣", label: "导入工作台" },
-  { id: "sources", icon: "▤", label: "来源与历史" },
-  { id: "events", icon: "▦", label: "安排预览" },
-  { id: "rules", icon: "⌘", label: "规则模板" },
-  { id: "export", icon: "↗", label: "导出与记录" },
+  { id: "import", icon: "⇣", label: "导入" },
+  { id: "events", icon: "▦", label: "安排" },
+  { id: "rules", icon: "⌘", label: "模板" },
   { id: "settings", icon: "⚙", label: "设置" },
 ];
 async function refresh(id?: string) {
   try {
     capabilities.value = await call("capabilities");
-    const active =
-      id || workspace.value?.id || capabilities.value.workspaces[0]?.id;
-    if (active) {
+    const preferred =
+      id ||
+      workspace.value?.id ||
+      capabilities.value.device?.last_workspace ||
+      capabilities.value.workspaces[0]?.id;
+    const active = capabilities.value.workspaces.some(
+      (w: any) => w.id === preferred,
+    )
+      ? preferred
+      : capabilities.value.workspaces[0]?.id;
+    if (
+      active &&
+      capabilities.value.workspaces.some((w: any) => w.id === active)
+    ) {
       workspace.value = await call("workspace", { workspace_id: active });
       window.calisiftWorkspace = active;
     }
@@ -52,12 +67,14 @@ async function selectWorkspace(id: string) {
   jobId.value = "";
   sourceId.value = "";
   await refresh(id);
+  await call("device_preferences", { values: { last_workspace: id } });
   page.value = "import";
 }
 async function create() {
   try {
     const result = await call("create_workspace", { name: name.value });
     await refresh(result.id);
+    await call("device_preferences", { values: { last_workspace: result.id } });
   } catch (e: any) {
     notify(e.message, true);
   }
@@ -74,6 +91,7 @@ async function sample() {
 async function showCourse(id: string) {
   jobId.value = id;
   page.value = "import";
+  importTab.value = "task";
   await nextTick();
   await importPane.value?.resume(id);
 }
@@ -81,13 +99,20 @@ window.addEventListener("calisift-drop", async (event: Event) => {
   const data = (event as CustomEvent).detail;
   if (data.error) return notify(data.error, true);
   page.value = "import";
+  importTab.value = "task";
   await nextTick();
   await importPane.value?.accept(data.job);
 });
 watch(
-  () => workspace.value?.settings.large_text,
-  (large) =>
-    (document.documentElement.style.fontSize = large ? "17px" : "14px"),
+  () => workspace.value?.settings,
+  (settings) => {
+    const root = document.documentElement;
+    root.style.fontSize =
+      (settings?.font_size || (settings?.large_text ? 17 : 14)) + "px";
+    root.dataset.theme = settings?.theme || "light";
+    root.dataset.density = settings?.density || "comfortable";
+  },
+  { deep: true },
 );
 whenReady(() => refresh());
 setTimeout(() => {
@@ -128,7 +153,10 @@ setTimeout(() => {
         <button
           v-for="item in nav"
           :key="item.id"
-          :class="{ active: page === item.id }"
+          :class="{
+            active:
+              page === item.id || (page === 'export' && item.id === 'events'),
+          }"
           :disabled="!workspace"
           @click="page = item.id"
         >
@@ -140,7 +168,7 @@ setTimeout(() => {
         <span class="local-dot"></span>安排保存在这台电脑<small
           >核对、积累，安心导出。</small
         ><span class="version">{{
-          capabilities?.version || "0.3.0-alpha.1"
+          capabilities?.version || "0.3.0-alpha.2"
         }}</span>
       </div>
     </aside>
@@ -179,25 +207,40 @@ setTimeout(() => {
         </div>
       </section>
       <template v-else
-        ><ImportPane
-          v-if="page === 'import'"
+        ><div v-if="page === 'import'" class="section-tabs">
+          <button
+            :class="{ primary: importTab === 'task' }"
+            @click="importTab = 'task'"
+          >
+            导入任务</button
+          ><button
+            :class="{ primary: importTab === 'sources' }"
+            @click="importTab = 'sources'"
+          >
+            来源与历史
+          </button>
+        </div>
+        <ImportPane
+          v-if="page === 'import' && importTab === 'task'"
           ref="importPane"
           :key="workspace.id"
           :workspace="workspace"
           :job-id="jobId"
           @job="jobId = $event"
+          @export="page = 'export'"
           @refresh="refresh()" /><SourcesPane
-          v-else-if="page === 'sources'"
+          v-else-if="page === 'import' && importTab === 'sources'"
           :workspace="workspace"
           @rules="
             sourceId = $event;
             page = 'rules';
           "
-          @import="page = 'import'"
+          @import="importTab = 'task'"
           @refresh="refresh()" /><EventsPane
           v-else-if="page === 'events'"
           :key="workspace.id"
           :workspace="workspace"
+          @export="page = 'export'"
           @refresh="refresh()" /><RulesPane
           v-else-if="page === 'rules'"
           :key="workspace.id"

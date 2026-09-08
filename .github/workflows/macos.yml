@@ -1,0 +1,82 @@
+name: macOS preview
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, 'work/**']
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            arch: arm64
+          - os: macos-15-intel
+            arch: x86_64
+    runs-on: ${{ matrix.os }}
+    env:
+      CALISIFT_REQUIRE_OCR: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: python -m pip install -r requirements-lock.txt
+      - run: python -m pip install --no-deps -e .
+      - run: npm ci --prefix desktop
+      - uses: actions/cache@v4
+        with:
+          path: models/ocr
+          key: ocr-${{ hashFiles('resources/models.json') }}
+      - run: python -m scripts.install_ocr
+      - run: python -m pytest
+      - run: npm test --prefix desktop
+      - run: python -m scripts.build_macos
+      - run: python -m scripts.smoke_macos
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-${{ matrix.arch }}
+          path: |
+            artifacts/release/*
+            artifacts/macos-smoke.json
+            artifacts/macos-ui.json
+  newer-os:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-26
+            arch: arm64
+          - os: macos-26-intel
+            arch: x86_64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}
+          path: artifacts/download
+      - name: Mount and check the built application
+        run: |
+          mkdir -p artifacts/mount
+          hdiutil attach artifacts/download/release/*.dmg -readonly -nobrowse -mountpoint "$PWD/artifacts/mount"
+          python -m scripts.smoke_macos artifacts/mount/CaliSift.app
+          hdiutil detach "$PWD/artifacts/mount"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-26-${{ matrix.arch }}-checks
+          path: |
+            artifacts/macos-smoke.json
+            artifacts/macos-ui.json

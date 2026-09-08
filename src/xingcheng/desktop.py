@@ -45,6 +45,11 @@ class Bridge:
 
     def call(self, method, payload=None):
         try:
+            if self._window is not None and hasattr(self._window, "get_current_url"):
+                from .platforms import allowed_origin
+
+                if not allowed_origin(self._window.get_current_url()):
+                    raise LocalError("ACCESS_DENIED", "仅允许 CaliSift 本机界面调用")
             value = self._call(method, payload or {})
             return dict(ok=True, value=value)
         except Exception as error:
@@ -66,8 +71,22 @@ class Bridge:
 
     def _call(self, method, p):
         app = self._app
+        if method == "copy_diagnostics":
+            from .platforms import copy_text
+
+            copy_text(
+                self._window,
+                json.dumps(app.diagnostics(), ensure_ascii=False, indent=2),
+            )
+            return True
         calls = {
             "capabilities": app.capabilities,
+            "get_preferences": app.get_preferences,
+            "save_preferences": app.save_preferences,
+            "device_preferences": app.device_preferences,
+            "delete_template": app.delete_template,
+            "last_semester": app.last_semester,
+            "diagnostics": app.diagnostics,
             "create_workspace": app.create_workspace,
             "workspace": app.workspace,
             "list_jobs": app.list_jobs,
@@ -223,10 +242,9 @@ class Bridge:
             record = app.store.document("export", p["export_id"])
             if not record.get("path") or not Path(record["path"]).is_file():
                 raise LocalError("NOT_FOUND", "此设备没有该导出文件，请重新导出")
-            if os.name == "nt":
-                os.startfile(str(Path(record["path"]).parent))
-            else:
-                webbrowser.open(Path(record["path"]).parent.as_uri())
+            from .platforms import open_folder
+
+            open_folder(Path(record["path"]).parent)
             return True
         if method == "open_project":
             webbrowser.open("https://github.com/StellarYige/CaliSift")
@@ -259,12 +277,13 @@ def main(data_dir=None, on_ready=None):
         raise RuntimeError("桌面界面尚未构建，请先运行 npm run build:desktop")
     webview.settings["ALLOW_FILE_URLS"] = False
     webview.settings["OPEN_EXTERNAL_LINKS_IN_BROWSER"] = True
+    device = app.store.device_preferences()
     window = webview.create_window(
         "CaliSift · 星程",
         str(entry),
         js_api=bridge,
-        width=1280,
-        height=860,
+        width=device["width"],
+        height=device["height"],
         min_size=(640, 420),
         text_select=True,
         background_color="#f7f7fb",
@@ -304,6 +323,11 @@ def main(data_dir=None, on_ready=None):
 
     def shown():
         nonlocal navigation_hooked
+        if sys.platform == "darwin" and not navigation_hooked:
+            from .platforms import protect_cocoa
+
+            protect_cocoa(window)
+            navigation_hooked = True
         if os.name == "nt" and not navigation_hooked:
             from System import Action, EventHandler
             from Microsoft.Web.WebView2.Core import (
@@ -333,9 +357,14 @@ def main(data_dir=None, on_ready=None):
             )
             navigation_hooked = True
 
+    def resized(width, height):
+        if 640 <= width <= 7680 and 420 <= height <= 4320:
+            app.store.save_device_preferences(dict(width=width, height=height))
+
     # CoreWebView2 is initialized by the time the first local page has loaded.
     window.events.loaded += shown
     window.events.loaded += loaded
+    window.events.resized += resized
     window.events.closed += app.close
     try:
         webview.start(

@@ -1,47 +1,23 @@
 <script setup lang="ts">
-import { ref, reactive, watch } from "vue";
+import { ref, watch } from "vue";
 import { call } from "../bridge";
 import { useActions } from "../actions";
 import Modal from "./Modal.vue";
+import PreferencesPane from "./PreferencesPane.vue";
 const props = defineProps<{ workspace: any; capabilities: any }>(),
   emit = defineEmits(["refresh", "workspace"]);
 const { run, busy, notify } = useActions();
 const newName = ref(""),
   restore = ref<any>(null),
   replace = ref(false),
-  settings = reactive<any>({ large_text: false, hide_rest: false, colors: {} }),
   jobs = ref<any[]>([]),
   discard = ref<any>(null);
-const categories = ["工作", "学习", "培训", "考试", "休息", "其他"];
 async function refresh() {
   jobs.value = await call("list_jobs", { workspace_id: props.workspace.id });
-}
-async function saveSettings() {
-  await run(async () => {
-    const p = await call("preview_change", {
-      workspace_id: props.workspace.id,
-      expected_version: props.workspace.version,
-      operation: {
-        type: "settings",
-        settings: structuredClone({
-          ...settings,
-          colors: { ...settings.colors },
-        }),
-      },
-    });
-    await call("commit_change", {
-      preview_id: p.preview_id,
-      expected_version: p.base_version,
-    });
-    emit("refresh");
-    notify("显示设置已保存");
-  });
 }
 watch(
   () => props.workspace.version,
   () => {
-    Object.assign(settings, props.workspace.settings);
-    settings.colors = { ...props.workspace.settings.colors };
     refresh();
   },
   { immediate: true },
@@ -119,43 +95,7 @@ watch(
         </div>
       </section>
     </div>
-    <section class="card">
-      <header class="panel-heading"><h2>显示设置</h2></header>
-      <div class="button-row">
-        <label class="check"
-          ><input type="checkbox" v-model="settings.large_text" />大字号</label
-        ><label class="check"
-          ><input
-            type="checkbox"
-            v-model="settings.hide_rest"
-          />查看时隐藏休息安排</label
-        >
-      </div>
-      <div class="color-settings">
-        <label v-for="(category, i) in categories" :key="category"
-          >{{ category
-          }}<input
-            type="color"
-            :value="
-              settings.colors[category] ||
-              [
-                '#8876c6',
-                '#5d96a5',
-                '#c69553',
-                '#d37f87',
-                '#8b9b88',
-                '#9893a0',
-              ][i]
-            "
-            @input="
-              settings.colors[category] = (
-                $event.target as HTMLInputElement
-              ).value
-            "
-        /></label>
-      </div>
-      <button class="secondary" @click="saveSettings">保存显示设置</button>
-    </section>
+    <PreferencesPane :workspace-id="workspace.id" @refresh="emit('refresh')" />
     <section class="card">
       <header class="panel-heading">
         <h2>图片识别</h2>
@@ -195,6 +135,23 @@ watch(
           打开项目与下载说明 ↗
         </button>
       </div>
+    </section>
+    <section class="card">
+      <h2>问题反馈</h2>
+      <p>
+        复制版本、系统和模型就绪状态，便于反馈；摘要不包含姓名、日程或本机路径。
+      </p>
+      <button
+        class="secondary"
+        @click="
+          run(async () => {
+            await call('copy_diagnostics');
+            notify('诊断摘要已复制');
+          })
+        "
+      >
+        复制诊断摘要
+      </button>
     </section>
     <section class="card">
       <header class="panel-heading"><h2>未完成任务与暂存文件</h2></header>

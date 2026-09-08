@@ -92,8 +92,10 @@ def pack_backup(store, wid):
     calendar = store.workspace(wid)["calendar"]
     payload = dict(
         format="calisift.backup",
-        version=1,
+        version=2,
         calendar=calendar,
+        preferences=store.preferences(wid)["values"],
+        semester=(store.documents("semester", wid) or [None])[0],
         templates=store.documents("template"),
         profiles=store.documents("profile", wid),
         exports=store.documents("export", wid),
@@ -106,7 +108,7 @@ def pack_backup(store, wid):
             entries["evidence/" + eid + ".jpg"] = store.evidence(eid)
         manifest = dict(
             format="calisift.backup",
-            version=1,
+            version=2,
             files={
                 name: hashlib.sha256(data).hexdigest() for name, data in entries.items()
             },
@@ -146,10 +148,9 @@ def unpack_backup(data):
                     "INVALID_INPUT", "备份缺少数据清单，请重新选择完整的 CaliSift 备份"
                 )
             manifest = json.loads(archive.read("manifest.json"))
-            if (
-                manifest.get("format") != "calisift.backup"
-                or manifest.get("version") != 1
-            ):
+            if manifest.get("format") != "calisift.backup" or manifest.get(
+                "version"
+            ) not in (1, 2):
                 raise LocalError("SCHEMA_TOO_NEW", "不支持此备份版本")
             if set(names) != set(manifest["files"]) | {"manifest.json"}:
                 raise LocalError("INVALID_INPUT", "备份清单不完整")
@@ -165,7 +166,7 @@ def unpack_backup(data):
             payload = json.loads(archive.read("data.json"))
             if (
                 payload.get("format") != "calisift.backup"
-                or payload.get("version") != 1
+                or payload.get("version") != manifest["version"]
             ):
                 raise LocalError("SCHEMA_TOO_NEW", "不支持此备份版本")
             calendar = payload["calendar"]

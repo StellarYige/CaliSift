@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "calisift"
-version = "0.3.0a1"
+version = "0.3.0a2"
 description = "Local, verifiable personal calendars from rosters, spreadsheets and screenshots."
 license = "Apache-2.0"
 readme = "README.md"

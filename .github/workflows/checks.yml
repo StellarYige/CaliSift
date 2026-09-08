@@ -28,7 +28,6 @@ jobs:
       - run: npm ci --prefix desktop
       - run: npm test --prefix desktop
       - run: npm run build:desktop
-      - run: npm ci
       - run: npm test
   real-ocr:
     name: Real OCR and full coverage (Windows)

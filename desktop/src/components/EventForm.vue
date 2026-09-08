@@ -1,5 +1,17 @@
 <script setup lang="ts">
-import { reactive } from "vue";
+import { reactive, inject, computed } from "vue";
+import { defaultCategories, type Category } from "../types";
+const categories = inject<{ value: Category[] }>("categories", {
+  value: defaultCategories,
+});
+const choices = computed(() => [
+  ...new Set(
+    [
+      ...categories.value.filter((c) => c.active).map((c) => c.name),
+      props.event.category,
+    ].filter(Boolean),
+  ),
+]);
 const props = defineProps<{ event: any }>();
 const emit = defineEmits(["save", "cancel"]);
 const value = reactive({
@@ -46,12 +58,9 @@ function submit() {
         :required="value.status !== 'pending'" /></label
     ><label
       >分类<select v-model="value.category">
-        <option>工作</option>
-        <option>学习</option>
-        <option>培训</option>
-        <option>考试</option>
-        <option>休息</option>
-        <option>其他</option>
+        <option v-for="category in choices" :key="category">
+          {{ category }}
+        </option>
       </select></label
     ><label
       >开始时间<input

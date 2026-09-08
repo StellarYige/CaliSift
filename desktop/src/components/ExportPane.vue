@@ -100,12 +100,12 @@ watch(
           ><label
             >分类<select v-model="options.category">
               <option value="">全部分类</option>
-              <option>工作</option>
-              <option>学习</option>
-              <option>培训</option>
-              <option>考试</option>
-              <option>休息</option>
-              <option>其他</option>
+              <option
+                v-for="category in workspace.settings.categories"
+                :key="category.name"
+              >
+                {{ category.name }}
+              </option>
             </select></label
           ><label
             >提醒<select v-model.number="options.alarm">

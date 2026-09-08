@@ -36,7 +36,7 @@ def main():
                 temporary.unlink(missing_ok=True)
         print("Verified source", target.name, flush=True)
     destination = (
-        ROOT / "artifacts/release/CaliSift-third-party-source-0.3.0-alpha.1.zip"
+        ROOT / "artifacts/release/CaliSift-third-party-source-0.3.0-alpha.2.zip"
     )
     destination.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(destination, "w", zipfile.ZIP_STORED) as archive:

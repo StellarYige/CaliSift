@@ -60,7 +60,7 @@ class LocalStore:
         self.session = identity()
         with self.connection() as db:
             version = db.execute("PRAGMA user_version").fetchone()[0]
-            if version > 1:
+            if version > 2:
                 raise LocalError(
                     "SCHEMA_TOO_NEW",
                     "数据来自更新版本，请升级 CaliSift 后打开；原数据已保留",
@@ -87,9 +87,24 @@ class LocalStore:
                 CREATE TABLE IF NOT EXISTS previews (
                     id TEXT PRIMARY KEY, workspace TEXT NOT NULL, version INTEGER NOT NULL,
                     session TEXT NOT NULL, body TEXT NOT NULL, receipt TEXT);
-                PRAGMA user_version=1;
             """
             )
+        if version == 1:
+            self.safety_backup("upgrade-v2")
+        with self.connection(True) as db:
+            if version < 2:
+                from .preferences import from_legacy
+
+                for row in db.execute("SELECT id,calendar FROM workspaces").fetchall():
+                    value = from_legacy(json.loads(row["calendar"]).get("settings", {}))
+                    self._put(
+                        db,
+                        "preferences",
+                        row["id"],
+                        row["id"],
+                        dict(revision=0, values=value),
+                    )
+                db.execute("PRAGMA user_version=2")
             db.execute("DELETE FROM previews WHERE receipt IS NULL")
 
     @contextmanager
@@ -124,7 +139,56 @@ class LocalStore:
                 (wid, name, calendar["version"], encode(calendar), now()),
             )
             self._index(db, wid, calendar)
+            from .preferences import Preferences, from_legacy
+
+            values = (
+                from_legacy(calendar["settings"])
+                if calendar["settings"]
+                else Preferences().model_dump()
+            )
+            self._put(db, "preferences", wid, wid, dict(revision=0, values=values))
         return self.workspace(wid)
+
+    def preferences(self, wid):
+        self.workspace(wid)
+        return self.document("preferences", wid)
+
+    def save_preferences(self, wid, revision, values):
+        from .preferences import Preferences
+
+        checked = Preferences.model_validate(values).model_dump()
+        with self.connection(True) as db:
+            row = db.execute(
+                "SELECT body FROM documents WHERE kind='preferences' AND id=?", (wid,)
+            ).fetchone()
+            if row is None:
+                raise LocalError("NOT_FOUND", "工作区不存在")
+            previous = json.loads(row[0])
+            if previous["revision"] != revision:
+                raise LocalError("VERSION_CONFLICT", "偏好已变化，请刷新设置后重试")
+            before = {c["name"] for c in previous["values"]["categories"]}
+            after = {c["name"] for c in checked["categories"]}
+            if before - after:
+                raise LocalError("INVALID_INPUT", "已有分类请停用，保留历史名称与配色")
+            result = dict(revision=revision + 1, values=checked)
+            self._put(db, "preferences", wid, wid, result)
+        return result
+
+    def device_preferences(self):
+        from .preferences import DevicePreferences
+
+        values = self.documents("device_preferences")
+        return values[0] if values else DevicePreferences().model_dump()
+
+    def save_device_preferences(self, values):
+        from .preferences import DevicePreferences
+
+        with self.connection(True) as db:
+            checked = DevicePreferences.model_validate(
+                {**self.device_preferences(), **values}
+            ).model_dump()
+            self._put(db, "device_preferences", "device", "", checked)
+        return checked
 
     def workspaces(self):
         with self.connection() as db:
@@ -257,6 +321,30 @@ class LocalStore:
             if calendar["version"] != expected_version + 1:
                 raise LocalError("VERSION_CONFLICT", "候选版本无效，请重新预览")
             self.verify_evidence(calendar)
+            old_calendar = json.loads(
+                db.execute(
+                    "SELECT calendar FROM workspaces WHERE id=?", (row["workspace"],)
+                ).fetchone()[0]
+            )
+            if old_calendar.get("settings") != calendar.get("settings"):
+                from .preferences import from_legacy
+
+                legacy = from_legacy(calendar.get("settings", {}))
+                pref = self.preferences(row["workspace"])
+                values = pref["values"]
+                values.update(
+                    font_size=legacy["font_size"], hide_rest=legacy["hide_rest"]
+                )
+                palette = {c["name"]: c["color"] for c in legacy["categories"]}
+                for category in values["categories"]:
+                    category["color"] = palette.get(category["name"], category["color"])
+                self._put(
+                    db,
+                    "preferences",
+                    row["workspace"],
+                    row["workspace"],
+                    dict(revision=pref["revision"] + 1, values=values),
+                )
             db.execute(
                 "UPDATE workspaces SET name=?, version=?, calendar=?, updated_at=? WHERE id=?",
                 (

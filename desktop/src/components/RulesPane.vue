@@ -4,17 +4,21 @@ import { call } from "../bridge";
 import { useActions } from "../actions";
 import ChangePreview from "./ChangePreview.vue";
 import Modal from "./Modal.vue";
+import CourseTable from "./CourseTable.vue";
+import type { Course } from "../types";
 const props = defineProps<{ workspace: any; sourceId?: string }>(),
   emit = defineEmits(["refresh", "course"]);
 const { run, busy, notify } = useActions();
+const templateId = ref("");
+const deleting = ref<any>(null);
 const source = ref(props.sourceId || ""),
   name = ref(""),
   description = ref(""),
   shifts = ref<any[]>([]),
   shiftName = ref(""),
   aliases = ref(""),
-  start = ref("08:00"),
-  end = ref("16:00"),
+  start = ref(""),
+  end = ref(""),
   nextDay = ref(false),
   template = ref<any>(null),
   preview = ref<any>(null),
@@ -23,22 +27,14 @@ const source = ref(props.sourceId || ""),
   shareChecked = ref(false);
 const monday = ref(""),
   weeks = ref(20),
-  periods = ref("08:00-08:45\n08:55-09:40\n10:00-10:45\n10:55-11:40"),
-  courseTitle = ref(""),
-  weekday = ref(1),
-  periodFrom = ref(1),
-  periodTo = ref(2),
-  weekFrom = ref(1),
-  weekTo = ref(16),
-  parity = ref("all"),
-  specificWeeks = ref(""),
-  location = ref("");
+  periods = ref("08:00-08:45\n08:55-09:40\n10:00-10:45\n10:55-11:40");
 function clone(value: any) {
   return JSON.parse(JSON.stringify(value));
 }
 async function loadTemplate(item: any) {
   source.value = "";
   await nextTick();
+  templateId.value = item.id;
   name.value = item.name;
   description.value = item.description;
   shifts.value = clone(item.rules.shifts || []);
@@ -61,6 +57,7 @@ async function refresh() {
   templates.value = await call("templates");
 }
 function load() {
+  templateId.value = "";
   const s = props.workspace.sources.find((s: any) => s.id === source.value);
   name.value = s?.name || "";
   shifts.value = clone(s?.rules?.shifts || []);
@@ -126,43 +123,42 @@ async function sourcePreview() {
     });
   });
 }
-async function saveTemplate() {
+async function saveTemplate(copy = false) {
   await run(async () => {
-    await call("save_template", {
+    const saved = await call("save_template", {
       name: name.value,
       rules: config(),
       description: description.value,
+      template_id: copy ? undefined : templateId.value || undefined,
     });
+    templateId.value = saved.id;
     await refresh();
     notify("规则模板已保存，可在导入时复用");
   });
 }
-async function expand() {
+async function expand(courses: Course[]) {
   await run(async () => {
     if (!monday.value) throw Error("请先设置第一教学周的周一");
-    const course: any = {
-      title: courseTitle.value,
-      weekday: weekday.value,
-      periods: Array.from(
-        { length: periodTo.value - periodFrom.value + 1 },
-        (_, i) => i + periodFrom.value,
-      ),
-      week_from: weekFrom.value,
-      week_to: weekTo.value,
-      parity: parity.value,
-      location: location.value,
-    };
-    if (specificWeeks.value.trim())
-      course.weeks = specificWeeks.value
-        .split(/[、,，\s]+/)
-        .filter(Boolean)
-        .map(Number);
     const job = await call("course_draft", {
       workspace_id: props.workspace.id,
-      course,
+      courses,
       semester: semester(),
     });
     emit("course", job.id);
+  });
+}
+async function reuseSemester() {
+  await run(async () => {
+    const value = await call("last_semester", {
+      workspace_id: props.workspace.id,
+    });
+    if (!value?.monday) return notify("此工作区还没有保存过学期配置");
+    monday.value = value.monday;
+    weeks.value = value.weeks;
+    periods.value = value.periods
+      .map((p: any) => p.start + "-" + p.end)
+      .join("\n");
+    notify("已载入上次学期，请核对日期后展开课程");
   });
 }
 watch(source, load, { immediate: true });
@@ -213,7 +209,8 @@ refresh();
       </div>
     </div>
     <div class="two-columns">
-      <section class="card">
+      <details class="card" :open="workspace.settings?.scenario !== 'study'">
+        <summary>班次时间</summary>
         <header class="panel-heading">
           <h2>班次时间</h2>
           <span class="muted">只应用于选定来源</span>
@@ -243,9 +240,15 @@ refresh();
             ><input v-model="nextDay" type="checkbox" />次日结束</label
           ><button class="secondary" @click="addShift">添加班次</button>
         </div>
-      </section>
-      <section class="card">
-        <header class="panel-heading"><h2>学期与节次</h2></header>
+      </details>
+      <details class="card" :open="workspace.settings?.scenario !== 'work'">
+        <summary>学期与节次</summary>
+        <header class="panel-heading">
+          <h2>学期与节次</h2>
+          <button class="text-button" @click="reuseSemester">
+            沿用上次学期
+          </button>
+        </header>
         <div class="form-grid">
           <label>第一教学周的周一<input v-model="monday" type="date" /></label
           ><label
@@ -269,7 +272,7 @@ refresh();
           已绑定表格布局：{{ template.layout }}，表头第
           {{ template.header_row + 1 }} 行。可在导入工作台重新校正。
         </p>
-      </section>
+      </details>
     </div>
     <div class="button-row">
       <button
@@ -279,68 +282,11 @@ refresh();
         :disabled="busy"
       >
         预览对已有安排的影响</button
-      ><button class="secondary" @click="saveTemplate" :disabled="busy">
-        保存为可复用模板
+      ><button class="secondary" @click="saveTemplate(false)" :disabled="busy">
+        {{ templateId ? "保存模板修改" : "保存为可复用模板" }}
       </button>
     </div>
-    <section class="card">
-      <header class="panel-heading">
-        <h2>建立学期课程</h2>
-        <span class="muted">先展开为实际日期，再核对保存</span>
-      </header>
-      <div class="form-grid four">
-        <label
-          >课程名称<input v-model="courseTitle" placeholder="课程名称" /></label
-        ><label
-          >星期<select v-model.number="weekday">
-            <option
-              v-for="(label, i) in ['一', '二', '三', '四', '五', '六', '日']"
-              :key="i"
-              :value="i + 1"
-            >
-              星期{{ label }}
-            </option>
-          </select></label
-        ><label
-          >开始节次<input
-            v-model.number="periodFrom"
-            type="number"
-            min="1"
-            max="30" /></label
-        ><label
-          >结束节次<input
-            v-model.number="periodTo"
-            type="number"
-            min="1"
-            max="30" /></label
-        ><label
-          >开始周<input
-            v-model.number="weekFrom"
-            type="number"
-            min="1"
-            max="60" /></label
-        ><label
-          >结束周<input
-            v-model.number="weekTo"
-            type="number"
-            min="1"
-            max="60" /></label
-        ><label
-          >单双周<select v-model="parity">
-            <option value="all">全部周</option>
-            <option value="odd">单周</option>
-            <option value="even">双周</option>
-          </select></label
-        ><label
-          >指定周次（可选）<input
-            v-model="specificWeeks"
-            placeholder="1,3,7,9" /></label
-        ><label class="span-2">地点<input v-model="location" /></label>
-      </div>
-      <button class="primary" @click="expand" :disabled="busy">
-        展开日期并核对
-      </button>
-    </section>
+    <CourseTable :busy="busy" @expand="expand" />
     <section class="card">
       <header class="panel-heading"><h2>已保存模板</h2></header>
       <div v-if="!templates.length" class="empty small-empty">还没有模板。</div>
@@ -353,6 +299,21 @@ refresh();
           </p>
         </div>
         <button class="text-button" @click="loadTemplate(item)">载入编辑</button
+        ><button
+          class="text-button"
+          @click="
+            run(async () => {
+              await call('save_template', {
+                name: item.name + ' 副本',
+                rules: item.rules,
+                description: item.description,
+              });
+              await refresh();
+            })
+          "
+        >
+          复制</button
+        ><button class="text-button" @click="deleting = item">删除</button
         ><button
           class="secondary small"
           @click="
@@ -400,6 +361,25 @@ refresh();
           "
         >
           保存模板文件
+        </button></template
+      ></Modal
+    >
+    <Modal v-if="deleting" title="删除模板" @close="deleting = null"
+      ><p>删除“{{ deleting.name }}”？已导入来源使用的规则快照会保留。</p>
+      <template #footer
+        ><button @click="deleting = null">取消</button
+        ><button
+          class="primary"
+          @click="
+            run(async () => {
+              await call('delete_template', { template_id: deleting.id });
+              if (templateId === deleting.id) templateId = '';
+              deleting = null;
+              await refresh();
+            })
+          "
+        >
+          删除模板
         </button></template
       ></Modal
     >
