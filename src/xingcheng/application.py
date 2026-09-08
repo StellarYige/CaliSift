@@ -206,8 +206,9 @@ class Application:
             rules={"semester": semester},
             report=report,
         )
-        self.store.put("job", jid, workspace_id, job)
-        self.store.put("semester", workspace_id, workspace_id, semester)
+        with self.store.connection(True) as db:
+            self.store._put(db, "job", jid, workspace_id, job)
+            self.store._put(db, "semester", workspace_id, workspace_id, semester)
         return self.jobs.public(job)
 
     def get_preferences(self, workspace_id):

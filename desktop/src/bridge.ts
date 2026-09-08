@@ -1,3 +1,4 @@
+import type { NativeRequests } from "./types";
 declare global {
   interface Window {
     pywebview?: {
@@ -5,6 +6,12 @@ declare global {
     };
     calisiftWorkspace?: string;
   }
+}
+export async function request<M extends keyof NativeRequests>(
+  method: M,
+  payload: NativeRequests[M][0],
+): Promise<NativeRequests[M][1]> {
+  return call<NativeRequests[M][1]>(method, payload);
 }
 export async function call<T = any>(
   method: string,

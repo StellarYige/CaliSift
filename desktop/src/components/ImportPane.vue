@@ -92,8 +92,12 @@ const statusLabel: Record<string, string> = {
 };
 let sequence = 0;
 const panelRatio = ref(50);
-run(async () => { panelRatio.value = (await call("device_preferences")).panel_ratio; });
-onUnmounted(() => { sequence++; });
+run(async () => {
+  panelRatio.value = (await call("device_preferences")).panel_ratio;
+});
+onUnmounted(() => {
+  sequence++;
+});
 async function refreshJobs() {
   jobs.value = await call("list_jobs", { workspace_id: props.workspace.id });
   templates.value = await call("templates");
@@ -579,11 +583,24 @@ defineExpose({ accept, resume });
           重试此文件
         </button>
       </div>
-      <label class="panel-size">原文区域宽度
-        <input type="range" v-model.number="panelRatio" min="30" max="70" aria-label="原文区域宽度"
-          @change="run(() => call('device_preferences', { values: { panel_ratio: panelRatio } }))" />
+      <label class="panel-size"
+        >原文区域宽度
+        <input
+          type="range"
+          v-model.number="panelRatio"
+          min="30"
+          max="70"
+          aria-label="原文区域宽度"
+          @change="
+            run(() =>
+              call('device_preferences', {
+                values: { panel_ratio: panelRatio },
+              }),
+            )
+          "
+        />
       </label>
-      <div class="review-grid" :style="{'--panel-ratio': panelRatio + '%'}">
+      <div class="review-grid" :style="{ '--panel-ratio': panelRatio + '%' }">
         <section class="card evidence-panel">
           <header class="panel-heading">
             <h2>原文与依据</h2>

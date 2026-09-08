@@ -70,6 +70,9 @@ class Bridge:
             return dict(ok=False, error=dict(code=code, message=message))
 
     def _call(self, method, p):
+        from .desktop_contracts import validate_request
+
+        p = validate_request(method, p)
         app = self._app
         if method == "copy_diagnostics":
             from .platforms import copy_text

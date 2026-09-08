@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { call } from "../bridge";
+import { request } from "../bridge";
 import { useActions } from "../actions";
 import type { Preferences, PreferenceSnapshot } from "../types";
 const props = defineProps<{ workspaceId: string }>();
@@ -10,14 +10,14 @@ const snapshot = ref<PreferenceSnapshot>();
 const value = ref<Preferences>();
 const categoryName = ref("");
 async function load() {
-  snapshot.value = await call<PreferenceSnapshot>("get_preferences", {
+  snapshot.value = await request("get_preferences", {
     workspace_id: props.workspaceId,
   });
-  value.value = structuredClone(snapshot.value.values);
+  value.value = JSON.parse(JSON.stringify(snapshot.value.values));
 }
 async function save() {
   await run(async () => {
-    await call("save_preferences", {
+    await request("save_preferences", {
       workspace_id: props.workspaceId,
       expected_revision: snapshot.value!.revision,
       values: JSON.parse(JSON.stringify(value.value)),

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-const props = defineProps<{ entries: any[]; checked: number[] }>();
+import type { DraftEvent } from "../types";
+const props = defineProps<{ entries: DraftEvent[]; checked: number[] }>();
 const emit = defineEmits(["update:checked", "edit", "evidence"]);
 const onlyPending = ref(false),
   page = ref(0);

@@ -2,11 +2,222 @@
   "independent_review": false,
   "description": "合成回归集；六个变体均属于同一明细布局，不计为六种独立布局。",
   "cases": [
-    {"id":"clean","file":"clean.png","kind":"image","layout":"records-four-columns","provenance":"synthetic","name":"星辰奕歌","year":2026,"identity_cells":["B2"],"expected":[{"date":"2026-09-07","title":"消防培训","start":"08:00","end":"10:00","end_date":"2026-09-07","location":""}]},
-    {"id":"rotated","file":"rotated.png","kind":"image","layout":"records-four-columns","provenance":"synthetic","name":"星辰奕歌","year":2026,"identity_cells":["B2"],"expected":[{"date":"2026-09-07","title":"消防培训","start":"08:00","end":"10:00","end_date":"2026-09-07","location":""}]},
-    {"id":"skewed","file":"skewed.png","kind":"image","layout":"records-four-columns","provenance":"synthetic","name":"星辰奕歌","year":2026,"identity_cells":["B2"],"expected":[{"date":"2026-09-07","title":"消防培训","start":"08:00","end":"10:00","end_date":"2026-09-07","location":""}]},
-    {"id":"compressed","file":"compressed.jpg","kind":"image","layout":"records-four-columns","provenance":"synthetic","name":"星辰奕歌","year":2026,"identity_cells":["B2"],"expected":[{"date":"2026-09-07","title":"消防培训","start":"08:00","end":"10:00","end_date":"2026-09-07","location":""}]},
-    {"id":"merged","file":"merged.png","kind":"image","layout":"records-four-columns","provenance":"synthetic","name":"星辰奕歌","year":2026,"identity_cells":["B3"],"expected":[{"date":"2026-09-07","title":"消防培训","start":"08:00","end":"10:00","end_date":"2026-09-07","location":""}]},
-    {"id":"borderless","file":"borderless.png","kind":"image","layout":"records-four-columns","provenance":"synthetic","name":"星辰奕歌","year":2026,"identity_cells":["B2"],"expected":[{"date":"2026-09-07","title":"消防培训","start":"08:00","end":"10:00","end_date":"2026-09-07","location":""}]}
-  ]
+    {
+      "id": "clean",
+      "file": "clean.png",
+      "kind": "image",
+      "layout": "records-four-columns",
+      "provenance": "synthetic",
+      "name": "星辰奕歌",
+      "year": 2026,
+      "identity_cells": [
+        {
+          "sheet": "图片表格",
+          "cell": "B2"
+        }
+      ],
+      "expected": [
+        {
+          "date": "2026-09-07",
+          "title": "消防培训",
+          "start": "08:00",
+          "end": "10:00",
+          "end_date": "2026-09-07",
+          "location": "",
+          "anchors": [
+            {
+              "sheet": "图片表格",
+              "name_cell": "B2",
+              "evidence": {
+                "date": "A2",
+                "title": "C2"
+              }
+            }
+          ]
+        }
+      ],
+      "license": "Apache-2.0; repository-generated sample, Noto Sans SC font under OFL-1.1"
+    },
+    {
+      "id": "rotated",
+      "file": "rotated.png",
+      "kind": "image",
+      "layout": "records-four-columns",
+      "provenance": "synthetic",
+      "name": "星辰奕歌",
+      "year": 2026,
+      "identity_cells": [
+        {
+          "sheet": "图片表格",
+          "cell": "B2"
+        }
+      ],
+      "expected": [
+        {
+          "date": "2026-09-07",
+          "title": "消防培训",
+          "start": "08:00",
+          "end": "10:00",
+          "end_date": "2026-09-07",
+          "location": "",
+          "anchors": [
+            {
+              "sheet": "图片表格",
+              "name_cell": "B2",
+              "evidence": {
+                "date": "A2",
+                "title": "C2"
+              }
+            }
+          ]
+        }
+      ],
+      "license": "Apache-2.0; repository-generated sample, Noto Sans SC font under OFL-1.1"
+    },
+    {
+      "id": "skewed",
+      "file": "skewed.png",
+      "kind": "image",
+      "layout": "records-four-columns",
+      "provenance": "synthetic",
+      "name": "星辰奕歌",
+      "year": 2026,
+      "identity_cells": [
+        {
+          "sheet": "图片表格",
+          "cell": "B2"
+        }
+      ],
+      "expected": [
+        {
+          "date": "2026-09-07",
+          "title": "消防培训",
+          "start": "08:00",
+          "end": "10:00",
+          "end_date": "2026-09-07",
+          "location": "",
+          "anchors": [
+            {
+              "sheet": "图片表格",
+              "name_cell": "B2",
+              "evidence": {
+                "date": "A2",
+                "title": "C2"
+              }
+            }
+          ]
+        }
+      ],
+      "license": "Apache-2.0; repository-generated sample, Noto Sans SC font under OFL-1.1"
+    },
+    {
+      "id": "compressed",
+      "file": "compressed.jpg",
+      "kind": "image",
+      "layout": "records-four-columns",
+      "provenance": "synthetic",
+      "name": "星辰奕歌",
+      "year": 2026,
+      "identity_cells": [
+        {
+          "sheet": "图片表格",
+          "cell": "B2"
+        }
+      ],
+      "expected": [
+        {
+          "date": "2026-09-07",
+          "title": "消防培训",
+          "start": "08:00",
+          "end": "10:00",
+          "end_date": "2026-09-07",
+          "location": "",
+          "anchors": [
+            {
+              "sheet": "图片表格",
+              "name_cell": "B2",
+              "evidence": {
+                "date": "A2",
+                "title": "C2"
+              }
+            }
+          ]
+        }
+      ],
+      "license": "Apache-2.0; repository-generated sample, Noto Sans SC font under OFL-1.1"
+    },
+    {
+      "id": "merged",
+      "file": "merged.png",
+      "kind": "image",
+      "layout": "records-four-columns",
+      "provenance": "synthetic",
+      "name": "星辰奕歌",
+      "year": 2026,
+      "identity_cells": [
+        {
+          "sheet": "图片表格",
+          "cell": "B3"
+        }
+      ],
+      "expected": [
+        {
+          "date": "2026-09-07",
+          "title": "消防培训",
+          "start": "08:00",
+          "end": "10:00",
+          "end_date": "2026-09-07",
+          "location": "",
+          "anchors": [
+            {
+              "sheet": "图片表格",
+              "name_cell": "B3",
+              "evidence": {
+                "date": "A3",
+                "title": "C3"
+              }
+            }
+          ]
+        }
+      ],
+      "license": "Apache-2.0; repository-generated sample, Noto Sans SC font under OFL-1.1"
+    },
+    {
+      "id": "borderless",
+      "file": "borderless.png",
+      "kind": "image",
+      "layout": "records-four-columns",
+      "provenance": "synthetic",
+      "name": "星辰奕歌",
+      "year": 2026,
+      "identity_cells": [
+        {
+          "sheet": "图片表格",
+          "cell": "B2"
+        }
+      ],
+      "expected": [
+        {
+          "date": "2026-09-07",
+          "title": "消防培训",
+          "start": "08:00",
+          "end": "10:00",
+          "end_date": "2026-09-07",
+          "location": "",
+          "anchors": [
+            {
+              "sheet": "图片表格",
+              "name_cell": "B2",
+              "evidence": {
+                "date": "A2",
+                "title": "C2"
+              }
+            }
+          ]
+        }
+      ],
+      "license": "Apache-2.0; repository-generated sample, Noto Sans SC font under OFL-1.1"
+    }
+  ],
+  "split": "development"
 }

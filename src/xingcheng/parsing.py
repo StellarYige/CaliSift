@@ -83,7 +83,13 @@ def matches_name(value, name: str) -> bool:
 
 
 def field_name(value) -> str | None:
-    label = re.sub(r"[\s:：/()（）]", "", text(value))
+    # Only remove known input-format annotations; arbitrary parentheses may carry meaning.
+    value = re.sub(
+        r"[（(]\s*(?:YYYY-MM-DD|yyyy-mm-dd|年/月/日|24小时制|HH:mm|HH:MM|完整姓名)\s*[）)]\s*$",
+        "",
+        text(value),
+    )
+    label = re.sub(r"[\s:：/()（）]", "", value)
     for key, aliases in ALIASES.items():
         if label in aliases:
             return key

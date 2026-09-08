@@ -106,10 +106,41 @@ def ready(window, bridge):
             ]
             == 4
         )
+        window.evaluate_js(
+            "[...document.querySelectorAll('nav button')].find(b=>b.textContent.includes('设置')).click()"
+        )
+        wait("document.body.innerText.includes('外观与使用习惯')")
+        window.evaluate_js(
+            """(()=>{
+          const set=(label,value)=>{const node=[...document.querySelectorAll('label')].find(l=>l.textContent.includes(label)).querySelector('select');node.value=value;node.dispatchEvent(new Event('change',{bubbles:true}));};
+          set('主题','dark');set('字号','20');set('间距','compact');set('每周开始','0');
+        })()"""
+        )
+        click("保存偏好")
+        wait(
+            "document.documentElement.dataset.theme==='dark' && document.documentElement.style.fontSize==='20px'"
+        )
+        window.evaluate_js("document.querySelector('.toast')?.remove()")
+        capture("settings-dark")
+        window.evaluate_js(
+            "[...document.querySelectorAll('nav button')].find(b=>b.textContent.includes('安排')).click()"
+        )
+        wait("document.body.innerText.includes('急救培训')")
+        capture("events-dark")
+        window.resize(720, 680)
+        time.sleep(0.5)
+        assert window.evaluate_js("document.documentElement.scrollWidth<=innerWidth+1")
+        capture("events-dark-narrow-20")
+        click("月历")
+        wait("!!document.querySelector('.month-grid')")
+        capture("calendar-dark")
         result = dict(
             passed=True,
             items=4,
             renderer="WebView2",
+            themes=["light", "dark"],
+            font_sizes=[14, 17, 20],
+            device_pixel_ratio=window.evaluate_js("devicePixelRatio"),
             workflow="onboarding → sample → real parse → preview → commit → events → narrow / large text",
             ui_text=window.evaluate_js("document.body.innerText"),
         )

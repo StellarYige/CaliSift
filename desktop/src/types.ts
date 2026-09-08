@@ -53,6 +53,78 @@ export type RuleTemplate = {
   rules: Rules;
   version: number;
 };
+export type Evidence = {
+  file_id: string;
+  filename: string;
+  sheet: string;
+  name_cell: string;
+  evidence: Record<string, string>;
+  excerpt: string;
+  hidden: boolean;
+};
+export type DraftEvent = {
+  id: string;
+  date: string | null;
+  title: string;
+  shift: string;
+  start: string | null;
+  end: string | null;
+  end_date: string | null;
+  precision: "date" | "point" | "interval";
+  status: "pending" | "confirmed";
+  sources: Evidence[];
+  notes: string[];
+  warnings: string[];
+  location: string;
+  all_day?: boolean;
+  category?: string;
+  field_basis?: Record<string, string>;
+};
+export type ImportJob = {
+  id: string;
+  workspace_id: string;
+  status: string;
+  year: number;
+  source_id: string;
+  rules: Rules;
+  files: {
+    id: string;
+    filename: string;
+    suffix: string;
+    status: string;
+    error?: string;
+    options?: Record<string, unknown>;
+  }[];
+  report?: {
+    events: DraftEvent[];
+    pending: DraftEvent[];
+    files: Record<string, unknown>[];
+    warnings: string[];
+    conflicts: Record<string, unknown>[];
+  } | null;
+};
+export type NativeRequests = {
+  get_preferences: [{ workspace_id: string }, PreferenceSnapshot];
+  save_preferences: [
+    { workspace_id: string; expected_revision: number; values: Preferences },
+    PreferenceSnapshot,
+  ];
+  device_preferences: [
+    { values?: Partial<DevicePreferences> },
+    DevicePreferences,
+  ];
+  delete_template: [{ template_id: string }, boolean];
+  last_semester: [{ workspace_id: string }, Semester | null];
+  course_draft: [
+    (
+      | { workspace_id: string; semester: Semester; courses: Course[] }
+      | { workspace_id: string; semester: Semester; course: Course }
+    ),
+    ImportJob,
+  ];
+  get_job: [{ job_id: string }, ImportJob];
+  list_jobs: [{ workspace_id: string }, ImportJob[]];
+};
 export const defaultCategories: Category[] = [
   "工作",
   "学习",
