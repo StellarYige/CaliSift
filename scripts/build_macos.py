@@ -5,6 +5,7 @@ from pathlib import Path
 import platform
 import subprocess
 import sys
+import tempfile
 
 
 def run(*args):
@@ -34,18 +35,22 @@ def main():
 
     version = __version__.replace("a", "-alpha.")
     target = release / f"CaliSift-{version}-macos-{arch}.dmg"
-    run(
-        "hdiutil",
-        "create",
-        "-volname",
-        "CaliSift",
-        "-srcfolder",
-        "dist/CaliSift.app",
-        "-ov",
-        "-format",
-        "UDZO",
-        str(target),
-    )
+    with tempfile.TemporaryDirectory(prefix="calisift-dmg-") as temporary:
+        stage = Path(temporary)
+        run("ditto", "dist/CaliSift.app", str(stage / "CaliSift.app"))
+        (stage / "Applications").symlink_to("/Applications", target_is_directory=True)
+        run(
+            "hdiutil",
+            "create",
+            "-volname",
+            "CaliSift",
+            "-srcfolder",
+            str(stage),
+            "-ov",
+            "-format",
+            "UDZO",
+            str(target),
+        )
     run(sys.executable, "-m", "scripts.package_models")
     run(sys.executable, "-m", "scripts.package_manifest")
 

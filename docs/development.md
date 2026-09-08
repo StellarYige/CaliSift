@@ -30,14 +30,13 @@ previews, while committed preview receipts remain idempotent.
 ## Source environment
 
 Use Python 3.11 x64 and Node.js 24. Create `.venv`, install `requirements-lock.txt`,
-then install this project editable. The lock contains the Windows desktop/test
+then install this project editable. The lock contains the Windows/macOS desktop/test
 toolchain; the minimal `pip install -e .` installs only the spreadsheet core.
 
 ```powershell
 .venv\Scripts\python -m pip install -r requirements-lock.txt
-.venv\Scripts\python -m pip install -e ".[desktop,ocr,api,test,build]"
+.venv\Scripts\python -m pip install --no-deps -e .
 npm ci --prefix desktop
-npm ci
 npm run build:desktop
 .venv\Scripts\python -m scripts.install_ocr
 .venv\Scripts\python -m xingcheng.desktop

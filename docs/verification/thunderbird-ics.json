@@ -1,0 +1,242 @@
+{
+  "version": "155.0",
+  "outcomes": [
+    {
+      "input_count": 3,
+      "duplicates": 0,
+      "error_messages": [],
+      "count": 3,
+      "events": [
+        {
+          "id": "c2eec809-e01a-4ffb-a7c2-6b1cecdff5eb@xingcheng.local",
+          "title": "夜班，检查;路线\\备忘\n换行",
+          "start": "20260908T200000",
+          "end": "20260909T080000",
+          "all_day": false,
+          "timezone": "Asia/Shanghai",
+          "location": "A,201",
+          "alarms": [
+            -900
+          ],
+          "sequence": "0"
+        },
+        {
+          "id": "47ce4a3f-8cd7-42c6-91e6-1af69cac5f5c@xingcheng.local",
+          "title": "全天培训",
+          "start": "20260909",
+          "end": "20260910",
+          "all_day": true,
+          "timezone": "floating",
+          "location": null,
+          "alarms": [
+            -900
+          ],
+          "sequence": "0"
+        },
+        {
+          "id": "95e1de1e-4c38-4c98-aef0-cd7dd4dd98dc@xingcheng.local",
+          "title": "期末考试",
+          "start": "20270105T090000",
+          "end": "20270105T090000",
+          "all_day": false,
+          "timezone": "Asia/Shanghai",
+          "location": null,
+          "alarms": [
+            -900
+          ],
+          "sequence": "0"
+        }
+      ]
+    },
+    {
+      "input_count": 3,
+      "duplicates": 0,
+      "error_messages": [
+        "[Exception... \"ID already exists for addItem\"  nsresult: \"0x804a0004 (<unknown>)\"  location: \"JS frame :: resource:///modules/CalStorageCalendar.sys.mjs :: onError :: line 203\"  data: no]",
+        "[Exception... \"ID already exists for addItem\"  nsresult: \"0x804a0004 (<unknown>)\"  location: \"JS frame :: resource:///modules/CalStorageCalendar.sys.mjs :: onError :: line 203\"  data: no]",
+        "[Exception... \"ID already exists for addItem\"  nsresult: \"0x804a0004 (<unknown>)\"  location: \"JS frame :: resource:///modules/CalStorageCalendar.sys.mjs :: onError :: line 203\"  data: no]"
+      ],
+      "count": 3,
+      "events": [
+        {
+          "id": "c2eec809-e01a-4ffb-a7c2-6b1cecdff5eb@xingcheng.local",
+          "title": "夜班，检查;路线\\备忘\n换行",
+          "start": "20260908T200000",
+          "end": "20260909T080000",
+          "all_day": false,
+          "timezone": "Asia/Shanghai",
+          "location": "A,201",
+          "alarms": [
+            -900
+          ],
+          "sequence": "0"
+        },
+        {
+          "id": "47ce4a3f-8cd7-42c6-91e6-1af69cac5f5c@xingcheng.local",
+          "title": "全天培训",
+          "start": "20260909",
+          "end": "20260910",
+          "all_day": true,
+          "timezone": "floating",
+          "location": null,
+          "alarms": [
+            -900
+          ],
+          "sequence": "0"
+        },
+        {
+          "id": "95e1de1e-4c38-4c98-aef0-cd7dd4dd98dc@xingcheng.local",
+          "title": "期末考试",
+          "start": "20270105T090000",
+          "end": "20270105T090000",
+          "all_day": false,
+          "timezone": "Asia/Shanghai",
+          "location": null,
+          "alarms": [
+            -900
+          ],
+          "sequence": "0"
+        }
+      ]
+    },
+    {
+      "input_count": 3,
+      "duplicates": 0,
+      "error_messages": [
+        "[Exception... \"ID already exists for addItem\"  nsresult: \"0x804a0004 (<unknown>)\"  location: \"JS frame :: resource:///modules/CalStorageCalendar.sys.mjs :: onError :: line 203\"  data: no]",
+        "[Exception... \"ID already exists for addItem\"  nsresult: \"0x804a0004 (<unknown>)\"  location: \"JS frame :: resource:///modules/CalStorageCalendar.sys.mjs :: onError :: line 203\"  data: no]",
+        "[Exception... \"ID already exists for addItem\"  nsresult: \"0x804a0004 (<unknown>)\"  location: \"JS frame :: resource:///modules/CalStorageCalendar.sys.mjs :: onError :: line 203\"  data: no]"
+      ],
+      "count": 3,
+      "events": [
+        {
+          "id": "c2eec809-e01a-4ffb-a7c2-6b1cecdff5eb@xingcheng.local",
+          "title": "夜班，检查;路线\\备忘\n换行",
+          "start": "20260908T200000",
+          "end": "20260909T080000",
+          "all_day": false,
+          "timezone": "Asia/Shanghai",
+          "location": "A,201",
+          "alarms": [
+            -900
+          ],
+          "sequence": "0"
+        },
+        {
+          "id": "47ce4a3f-8cd7-42c6-91e6-1af69cac5f5c@xingcheng.local",
+          "title": "全天培训",
+          "start": "20260909",
+          "end": "20260910",
+          "all_day": true,
+          "timezone": "floating",
+          "location": null,
+          "alarms": [
+            -900
+          ],
+          "sequence": "0"
+        },
+        {
+          "id": "95e1de1e-4c38-4c98-aef0-cd7dd4dd98dc@xingcheng.local",
+          "title": "期末考试",
+          "start": "20270105T090000",
+          "end": "20270105T090000",
+          "all_day": false,
+          "timezone": "Asia/Shanghai",
+          "location": null,
+          "alarms": [
+            -900
+          ],
+          "sequence": "0"
+        }
+      ]
+    },
+    {
+      "input_count": 2,
+      "duplicates": 0,
+      "error_messages": [
+        "[Exception... \"ID already exists for addItem\"  nsresult: \"0x804a0004 (<unknown>)\"  location: \"JS frame :: resource:///modules/CalStorageCalendar.sys.mjs :: onError :: line 203\"  data: no]",
+        "[Exception... \"ID already exists for addItem\"  nsresult: \"0x804a0004 (<unknown>)\"  location: \"JS frame :: resource:///modules/CalStorageCalendar.sys.mjs :: onError :: line 203\"  data: no]"
+      ],
+      "count": 3,
+      "events": [
+        {
+          "id": "c2eec809-e01a-4ffb-a7c2-6b1cecdff5eb@xingcheng.local",
+          "title": "夜班，检查;路线\\备忘\n换行",
+          "start": "20260908T200000",
+          "end": "20260909T080000",
+          "all_day": false,
+          "timezone": "Asia/Shanghai",
+          "location": "A,201",
+          "alarms": [
+            -900
+          ],
+          "sequence": "0"
+        },
+        {
+          "id": "47ce4a3f-8cd7-42c6-91e6-1af69cac5f5c@xingcheng.local",
+          "title": "全天培训",
+          "start": "20260909",
+          "end": "20260910",
+          "all_day": true,
+          "timezone": "floating",
+          "location": null,
+          "alarms": [
+            -900
+          ],
+          "sequence": "0"
+        },
+        {
+          "id": "95e1de1e-4c38-4c98-aef0-cd7dd4dd98dc@xingcheng.local",
+          "title": "期末考试",
+          "start": "20270105T090000",
+          "end": "20270105T090000",
+          "all_day": false,
+          "timezone": "Asia/Shanghai",
+          "location": null,
+          "alarms": [
+            -900
+          ],
+          "sequence": "0"
+        }
+      ]
+    },
+    {
+      "input_count": 2,
+      "duplicates": 0,
+      "error_messages": [],
+      "count": 2,
+      "events": [
+        {
+          "id": "c2eec809-e01a-4ffb-a7c2-6b1cecdff5eb@xingcheng.local",
+          "title": "夜班，检查;路线\\备忘\n换行",
+          "start": "20260908T210000",
+          "end": "20260909T080000",
+          "all_day": false,
+          "timezone": "Asia/Shanghai",
+          "location": "A,201",
+          "alarms": [
+            -900
+          ],
+          "sequence": "1"
+        },
+        {
+          "id": "47ce4a3f-8cd7-42c6-91e6-1af69cac5f5c@xingcheng.local",
+          "title": "全天培训",
+          "start": "20260909",
+          "end": "20260910",
+          "all_day": true,
+          "timezone": "floating",
+          "location": null,
+          "alarms": [
+            -900
+          ],
+          "sequence": "0"
+        }
+      ]
+    }
+  ],
+  "system": "Windows-10-10.0.26200-SP0",
+  "method": "Real Thunderbird importer and local calendar storage via Marionette",
+  "native_file_picker_verified": false,
+  "alarm_delivery_verified": false
+}
