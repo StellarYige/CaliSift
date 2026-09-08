@@ -807,7 +807,7 @@ main {
 }
 .mapping-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, var(--panel-ratio, 50%)) minmax(0, 1fr);
   gap: 18px;
   align-items: center;
   padding: 12px 0;

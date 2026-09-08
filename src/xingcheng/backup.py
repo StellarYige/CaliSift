@@ -98,7 +98,7 @@ def pack_backup(store, wid):
         semester=(store.documents("semester", wid) or [None])[0],
         templates=store.documents("template"),
         profiles=store.documents("profile", wid),
-        exports=store.documents("export", wid),
+        exports=[{**record, "path": ""} for record in store.documents("export", wid)],
         export_states=store.documents("export_state", wid),
     )
     buffer = io.BytesIO()

@@ -92,13 +92,21 @@ async function makePreview(operation: any) {
 }
 async function save(values: any) {
   await run(async () => {
-    await makePreview(
-      selected.value
+    const candidate = await call("preview_change", {
+      workspace_id: props.workspace.id,
+      expected_version: props.workspace.version,
+      operation: selected.value
         ? { type: "edit", event_id: selected.value.id, values }
         : { type: "manual", values },
-    );
+    });
+    const output = await call("commit_change", {
+      preview_id: candidate.preview_id,
+      expected_version: candidate.base_version,
+    });
     editing.value = null;
-    await commit();
+    emit("refresh");
+    await refresh(result.value.page);
+    notify(output.warning || "安排已保存");
   });
 }
 async function commit() {

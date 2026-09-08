@@ -85,7 +85,7 @@ def ready(window, bridge):
         wait("!document.querySelector('.modal')")
         wait("!!document.querySelector('.welcome-grid')")
         window.evaluate_js(
-            "[...document.querySelectorAll('nav button')].find(b=>b.textContent.includes('安排预览')).click()"
+            "[...document.querySelectorAll('nav button')].find(b=>b.textContent.includes('安排')).click()"
         )
         wait(
             "!!document.querySelector('h1')&&document.querySelector('h1').textContent==='安排预览'"

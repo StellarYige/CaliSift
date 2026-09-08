@@ -249,7 +249,8 @@ def test_backup_restore_evidence_integrity_and_export_identity(local, tmp_path):
     payload = unpack_backup(backup)
     assert payload["evidence"]["crops"][eid] == base64.b64encode(data).decode()
     assert "whole-image" not in encode(payload)
-    assert "private" not in encode(payload)
+    assert '"text":"private"' not in encode(payload)
+    assert all(not record["path"] for record in payload["exports"])
     prepared = app.prepare_restore(backup)
     restored = app.restore_backup(prepared["token"])
     newwid = restored["id"]

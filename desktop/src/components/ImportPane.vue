@@ -35,7 +35,6 @@ const preview = ref<any>(null),
   showPreview = ref(false),
   editing = ref<any>(null),
   editIndex = ref(0),
-  page = ref(0),
   checked = ref<number[]>([]),
   batch = ref(false),
   batchDate = ref(""),
@@ -47,7 +46,6 @@ const preview = ref<any>(null),
 const mappings = ref<Record<string, string>>({}),
   cancellations = ref<string[]>([]),
   corrections = ref<Record<string, string>>({}),
-  oldSearch = ref(""),
   locate = ref<string[]>([]);
 const evidenceImage = ref("");
 const mappingOpen = ref(false),
@@ -70,12 +68,6 @@ const entries = computed<any[]>(() => [
   ...(job.value?.report?.events || []),
   ...(job.value?.report?.pending || []),
 ]);
-const onlyPending = ref(false);
-const visibleEntries = computed(() =>
-  entries.value
-    .map((event, index) => ({ event, index }))
-    .filter(({ event }) => !onlyPending.value || event.status === "pending"),
-);
 const running = computed(() =>
   ["queued", "running"].includes(job.value?.status),
 );
@@ -85,11 +77,6 @@ const rules = computed(
     templates.value.find((t) => t.id === templateId.value)?.rules ||
     props.workspace.sources.find((s: any) => s.id === sourceId.value)?.rules ||
     {},
-);
-const candidates = computed(() =>
-  ((preview.value?.old_candidates || []) as any[])
-    .filter((e) => `${e.date} ${e.title}`.includes(oldSearch.value))
-    .slice(0, 200),
 );
 const statusLabel: Record<string, string> = {
   ready: "待识别",
@@ -103,9 +90,10 @@ const statusLabel: Record<string, string> = {
   committed: "已保存",
   discarded: "已丢弃",
 };
-let timer: ReturnType<typeof setInterval> | undefined,
-  polling = false,
-  sequence = 0;
+let sequence = 0;
+const panelRatio = ref(50);
+run(async () => { panelRatio.value = (await call("device_preferences")).panel_ratio; });
+onUnmounted(() => { sequence++; });
 async function refreshJobs() {
   jobs.value = await call("list_jobs", { workspace_id: props.workspace.id });
   templates.value = await call("templates");
@@ -127,7 +115,6 @@ async function accept(value: any) {
       .slice(0, 100) || "课程安排";
   selected.value = value.files[0]?.id || "";
   preview.value = null;
-  page.value = 0;
   checked.value = [];
   emit("job", value.id);
   await loadFile();
@@ -592,7 +579,11 @@ defineExpose({ accept, resume });
           重试此文件
         </button>
       </div>
-      <div class="review-grid">
+      <label class="panel-size">原文区域宽度
+        <input type="range" v-model.number="panelRatio" min="30" max="70" aria-label="原文区域宽度"
+          @change="run(() => call('device_preferences', { values: { panel_ratio: panelRatio } }))" />
+      </label>
+      <div class="review-grid" :style="{'--panel-ratio': panelRatio + '%'}">
         <section class="card evidence-panel">
           <header class="panel-heading">
             <h2>原文与依据</h2>

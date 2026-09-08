@@ -206,7 +206,9 @@ def test_worker_timeout_crash_protocol_and_frozen_entry(local, monkeypatch, tmp_
     process.communicate.return_value = (json.dumps({"error": "invalid layout"}), "")
     with pytest.raises(LocalError, match="invalid layout"):
         app.jobs.run_worker({"kind": "parse"})
-    assert Path(popen.call_args.args[0][0]).name == "calisift-worker.exe"
+    assert Path(popen.call_args.args[0][0]).name == (
+        "calisift-worker.exe" if sys.platform == "win32" else "calisift-worker"
+    )
     process.returncode = 1
     with pytest.raises(LocalError, match="进程"):
         app.jobs.run_worker({"kind": "parse"})
