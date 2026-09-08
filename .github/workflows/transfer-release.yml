@@ -1,0 +1,75 @@
+name: Transfer verified Windows package
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag with a draft release
+        required: true
+        type: string
+      run_id:
+        description: Successful Windows release candidate run for that exact tag
+        required: true
+        type: string
+permissions:
+  actions: read
+  contents: write
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ inputs.tag }}
+      BUILD_RUN: ${{ inputs.run_id }}
+    steps:
+      - name: Verify the build, checksums and draft before transferring
+        shell: python
+        run: |
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+
+          repo = os.environ['GITHUB_REPOSITORY']
+          tag = os.environ['RELEASE_TAG']
+          run_id = os.environ['BUILD_RUN']
+          assert re.fullmatch(r'v\d+\.\d+\.\d+(?:-alpha\.\d+)?', tag)
+          assert run_id.isdecimal()
+
+          def gh(*args):
+              return subprocess.check_output(['gh', *args], text=True)
+
+          def api(path):
+              return json.loads(gh('api', 'repos/' + repo + '/' + path))
+
+          releases = [r for r in api('releases?per_page=100') if r['tag_name'] == tag]
+          assert len(releases) == 1 and releases[0]['draft'], 'Only an existing draft can receive files'
+          release_id = releases[0]['id']
+          run = api('actions/runs/' + run_id)
+          assert run['name'] == 'Windows release candidate'
+          assert run['head_branch'] == tag and run['conclusion'] == 'success'
+          ref = api('git/ref/tags/' + tag)['object']
+          if ref['type'] == 'tag':
+              ref = api('git/tags/' + ref['sha'])['object']
+          assert ref['type'] == 'commit' and ref['sha'] == run['head_sha']
+
+          gh('run', 'download', run_id, '--repo', repo, '--name', 'Windows-release-candidate', '--dir', 'download')
+          manifests = list(Path('download').rglob('SHA256SUMS.txt'))
+          assert len(manifests) == 1
+          folder = manifests[0].parent
+          hashes = {}
+          for line in manifests[0].read_text(encoding='utf-8').splitlines():
+              expected, name = line.split('  ', 1)
+              assert Path(name).name == name
+              with (folder / name).open('rb') as stream:
+                  assert hashlib.file_digest(stream, 'sha256').hexdigest() == expected, name
+              hashes[name] = expected
+          name = 'CaliSift-' + tag[1:] + '-windows-x64-setup.exe'
+          assert name in hashes
+          assert api('releases/' + str(release_id))['draft'], 'Release was published during verification'
+          gh('release', 'upload', tag, str(folder / name), '--repo', repo, '--clobber')
+          uploaded = next(a for a in api('releases/' + str(release_id) + '/assets') if a['name'] == name)
+          assert uploaded['state'] == 'uploaded'
+          assert uploaded['digest'] == 'sha256:' + hashes[name]
+          print(json.dumps({'tag': tag, 'commit': ref['sha'], 'asset': name, 'digest': uploaded['digest'], 'draft_only': True}))
