@@ -775,7 +775,10 @@ class Application:
                     )
                 self.store._index(db, wid, calendar)
                 self.store._put(
-                    db, "preferences", wid, wid, dict(revision=0, values=prefs)
+                    db, "preferences", wid, wid, dict(
+                        revision=(self.store.preferences(wid)["revision"] + 1 if replace_workspace_id else 0),
+                        values=prefs,
+                    )
                 )
                 db.execute(
                     "DELETE FROM documents WHERE kind='semester' AND workspace=?",

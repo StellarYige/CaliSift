@@ -12,7 +12,10 @@ class AssetServer:
 
     @classmethod
     def start_server(cls, urls, http_port=None, **_):
-        root = Path(urls[0]).resolve().parent
+        # pywebview computes the URL relative to the exact path it was given.
+        # A macOS bundle links Frameworks/desktop-ui to Resources/desktop-ui.
+        common = Path(urls[0]).absolute().parent
+        root = common.resolve()
         server = cls()
 
         class Handler(BaseHTTPRequestHandler):
@@ -48,13 +51,14 @@ class AssetServer:
         server.http = ThreadingHTTPServer(("127.0.0.1", http_port or 0), Handler)
         server.port = server.http.server_port
         server.address = f"http://127.0.0.1:{server.port}/"
-        server.root_path = server.common_path = cls.common_path = str(root)
+        server.root_path = str(root)
+        server.common_path = cls.common_path = str(common)
         server.js_api_endpoint = None
         server.running = True
         server.thread = threading.Thread(target=server.http.serve_forever, daemon=True)
         server.thread.start()
         cls.instances.append(server)
-        return server.address, str(root), server
+        return server.address, str(common), server
 
     @property
     def is_running(self):

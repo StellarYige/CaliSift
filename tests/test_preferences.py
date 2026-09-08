@@ -97,3 +97,13 @@ def test_bulk_courses_validate_before_creating_draft_and_keep_semester(local):
     assert len(app.templates()) == 1
     app.delete_template(t["id"])
     assert app.templates() == [] and app.last_semester(wid) == semester
+
+
+def test_replacing_workspace_invalidates_a_preferences_form_opened_before_restore(local):
+    app, wid = local
+    old = app.get_preferences(wid)
+    prepared = app.prepare_restore(pack_backup(app.store, wid))
+    app.restore_backup(prepared['token'], wid, app.workspace(wid)['version'])
+    assert app.get_preferences(wid)['revision'] > old['revision']
+    with pytest.raises(LocalError, match='偏好已变化'):
+        app.save_preferences(wid, old['revision'], old['values'])

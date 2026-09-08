@@ -9,6 +9,27 @@ from xingcheng.preferences import Preferences, from_legacy
 from tests.test_desktop_store import local
 
 
+def test_symlinked_bundle_keeps_url_and_served_resource_root_consistent(tmp_path):
+    import urllib.request
+    import os
+    from urllib.parse import urljoin
+    resources = tmp_path / 'Resources'
+    resources.mkdir()
+    (resources / 'index.html').write_text('bundle UI', encoding='utf-8')
+    link = tmp_path / 'Frameworks'
+    try:
+        link.symlink_to(resources, target_is_directory=True)
+    except OSError:
+        pytest.skip('This Windows account cannot create symbolic links; macOS CI exercises the bundle path')
+    entry = str(link / 'index.html')
+    address, common, server = AssetServer.start_server([entry])
+    try:
+        url = urljoin(address, os.path.relpath(entry, common))
+        assert urllib.request.urlopen(url).read() == b'bundle UI'
+    finally:
+        server.close()
+
+
 def test_only_current_static_origin_can_call_native_bridge(local, tmp_path):
     app, wid = local
     (tmp_path / "index.html").write_text("test", encoding="utf-8")

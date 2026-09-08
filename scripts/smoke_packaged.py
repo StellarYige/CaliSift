@@ -146,7 +146,7 @@ def main():
             click("预览并加入日历")
             click("确认保存")
             result["checks"].append("bundled examples parsed and committed through UI")
-            click("导出与记录")
+            click("继续导出日历")
             click("查看导出预览")
             click("保存 ICS 文件")
             target = output / "native-export.ics"
