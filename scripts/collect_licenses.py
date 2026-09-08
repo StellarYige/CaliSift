@@ -13,6 +13,26 @@ from packaging.utils import canonicalize_name
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def is_license_text(path):
+    """Include compound notice names without copying similarly named binaries."""
+    name = Path(path).name.lower()
+    if Path(name).suffix in {
+        ".so",
+        ".dylib",
+        ".dll",
+        ".pyd",
+        ".py",
+        ".pyc",
+        ".a",
+        ".o",
+    }:
+        return False
+    return any(
+        name == word or name.startswith((word + ".", word + "_", word + "-"))
+        for word in ("license", "licence", "copying", "notice", "thirdpartynotices")
+    )
+
+
 def main():
     destination = ROOT / "resources/licenses/dependencies"
     destination.mkdir(parents=True, exist_ok=True)
@@ -42,13 +62,7 @@ def main():
         dist = metadata.distribution(name)
         texts = []
         for file in dist.files or []:
-            if file.name.lower() in ("license", "licence", "copying", "notice") or (
-                file.suffix.lower() in (".txt", ".md", ".rst", ".html")
-                and any(
-                    file.name.lower().startswith(key)
-                    for key in ("license", "licence", "copying", "notice")
-                )
-            ):
+            if is_license_text(file):
                 source = Path(dist.locate_file(file))
                 if not source.is_file():
                     continue
@@ -101,10 +115,7 @@ def main():
         name = entry.get("name") or package.split("node_modules/")[-1]
         texts = []
         for file in folder.iterdir():
-            if file.is_file() and any(
-                file.name.lower().startswith(word)
-                for word in ("license", "licence", "copying", "notice")
-            ):
+            if file.is_file() and is_license_text(file):
                 target = destination / "npm" / name / file.name
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(file, target)

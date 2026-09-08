@@ -1,0 +1,34 @@
+{
+  "system": "macOS-26.6.2-arm64-arm-64bit",
+  "architecture": "arm64",
+  "workers": [
+    {
+      "kind": "parse",
+      "seconds": 0.571,
+      "events": 2
+    },
+    {
+      "kind": "ocr",
+      "seconds": 3.278,
+      "events": 1
+    }
+  ],
+  "ui": {
+    "success": true,
+    "native_dialogs_verified": false,
+    "events": 4,
+    "ids": [
+      "61f00e5e-97eb-4389-a3ee-b0ccb2801ea3",
+      "c72c8459-4cba-4318-a758-98eabd822825",
+      "e4237128-540b-451c-8122-a802955a3fbf",
+      "5930abf4-da7f-4e62-a9ca-ab50b60cdd9f"
+    ],
+    "ui_import_confirm": true,
+    "export": true,
+    "backup": true,
+    "reopen_persistence": true
+  },
+  "gatekeeper_download_verified": false,
+  "apple_calendar_verified": false,
+  "drag_clipboard_verified": false
+}

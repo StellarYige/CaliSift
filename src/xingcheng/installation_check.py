@@ -66,6 +66,7 @@ def run():
                 } == set(result["ids"])
                 result["reopen_persistence"] = True
             except Exception as error:
+                result["success"] = False
                 result["error"] = str(error)
                 result["ui_state"] = window.evaluate_js(
                     "({url:location.href,title:document.title,text:document.body.innerText,bridge:!!window.pywebview})"

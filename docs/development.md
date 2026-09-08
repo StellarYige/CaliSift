@@ -110,7 +110,7 @@ npm run build:desktop
 .venv\Scripts\python -m scripts.smoke_desktop
 .venv\Scripts\python -m scripts.smoke_packaged dist/CaliSift/CaliSift.exe
 .venv\Scripts\python -m scripts.smoke_frozen_workers
-.venv\Scripts\python -m scripts.smoke_install artifacts/release/CaliSift-0.3.0-alpha.1-windows-x64-setup.exe
+.venv\Scripts\python -m scripts.smoke_install artifacts/release/CaliSift-0.3.0-alpha.2-windows-x64-setup.exe
 .venv\Scripts\python -m scripts.benchmark_desktop
 ```
 
@@ -156,3 +156,18 @@ Outputs: full Windows installer, model repair ZIP, dependency source ZIP and `SH
 automatic desktop updater and no code-signing certificate configured. Publish
 an alpha prerelease only after reviewing the actual build results; a successful
 CI job does not substitute for calendar-client or independent-photo acceptance.
+
+## macOS packaging
+
+Use a native Python 3.11 environment on macOS 15 or later, install the same lock
+and build the UI. Run `python -m scripts.build_macos`, then
+`python -m scripts.smoke_macos`. Build separately on Apple silicon and Intel;
+the release does not use Rosetta or a universal binary. The DMG contains
+`CaliSift.app` and an Applications shortcut. No paid signing certificate or
+notarization service is configured.
+
+The macOS workflow builds on 15 and tests the same DMG on 26, including the actual
+WKWebView UI, frozen OCR, SQLite persistence, backup and ICS export. Native file
+pickers, dragging, clipboard, Gatekeeper after a browser download and Apple
+Calendar are tracked as separate physical-device gaps. Platform boundaries and
+preference/backup schema details are in [the alpha.2 architecture](alpha2-architecture.md).

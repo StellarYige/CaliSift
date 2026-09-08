@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "items": 4,
+  "renderer": "WebView2",
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "font_sizes": [
+    14,
+    17,
+    20
+  ],
+  "device_pixel_ratio": 1.25,
+  "workflow": "onboarding → sample → real parse → preview → commit → events → narrow / large text"
+}

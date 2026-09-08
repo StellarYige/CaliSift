@@ -1,0 +1,18 @@
+[
+  {
+    "kind": "parse",
+    "exit_code": 0,
+    "error": null,
+    "items": 2,
+    "seconds": 0.898,
+    "peak_working_set_mib": 56.7
+  },
+  {
+    "kind": "ocr",
+    "exit_code": 0,
+    "error": null,
+    "items": 1,
+    "seconds": 3.45,
+    "peak_working_set_mib": 442.2
+  }
+]

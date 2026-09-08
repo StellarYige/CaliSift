@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "checks": [
+    "per-user full installer completed with WebView2 already present",
+    "installed GUI, native dialogs, OCR, ICS and restart passed",
+    "upgrade created a consistent recovery point and preserved identities/version",
+    "installed CLI portable backup restored into a separate workspace",
+    "uninstall removed program files and retained user database and backup"
+  ],
+  "install_seconds": 11.42
+}

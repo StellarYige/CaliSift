@@ -1,3 +1,5 @@
+> 历史方案：项目最终名称为 CaliSift。当前实现与平台验证范围见 [alpha.2 架构](alpha2-architecture.md) 和 [验收记录](desktop-verification.md)。
+
 # CaliSift / 星程：开源桌面版完整实施计划
 
 日期：2026-09-07；实施更新：2026-09-08。已实现 0.3.0-alpha.1 桌面开发预览，实际验证与剩余稳定版缺口见 [桌面验收记录](desktop-verification.md)。计划不替代验收和发布记录。

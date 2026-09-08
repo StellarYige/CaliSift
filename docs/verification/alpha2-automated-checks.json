@@ -1,0 +1,20 @@
+{
+  "date": "2026-09-08",
+  "version": "0.3.0-alpha.2",
+  "python": {
+    "tests": 257,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1
+  },
+  "coverage_percent": 91.14,
+  "includes_branch_coverage": true,
+  "desktop_tests_passed": 11,
+  "legacy_node_tests_passed": 25,
+  "remote_ci": {
+    "implementation_commit": "74ec2ace2999d26098e632408558d339f15dae1c",
+    "core_ocr": "https://github.com/StellarYige/CaliSift/actions/runs/34218674219",
+    "macos_15_26_both_architectures": "https://github.com/StellarYige/CaliSift/actions/runs/34218674342",
+    "conclusion": "success"
+  }
+}
