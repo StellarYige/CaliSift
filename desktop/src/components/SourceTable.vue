@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, watch, nextTick } from "vue";
 type Cell = { row: number; col: number; coordinate: string; text: string };
 const props = defineProps<{
   table: {
@@ -15,9 +16,33 @@ const emit = defineEmits<{
   pick: [cell: Cell];
   page: [row: number, col: number];
 }>();
+const container = ref<HTMLElement | null>(null);
+watch(
+  [() => props.table, () => props.locate],
+  async () => {
+    await nextTick();
+    const target = container.value?.querySelector<HTMLElement>(
+      `[data-coordinate="${props.locate[0] || ""}"]`,
+    );
+    if (target && container.value) {
+      // Scroll the source pane itself without moving the whole workbench.
+      const box = container.value.getBoundingClientRect(),
+        cell = target.getBoundingClientRect();
+      const rowHeader =
+        target.parentElement?.querySelector("th")?.getBoundingClientRect()
+          .width || 0;
+      const left = box.left + rowHeader + 8;
+      if (cell.top < box.top || cell.bottom > box.bottom)
+        container.value.scrollTop += cell.top - box.top - 8;
+      if (cell.left < left || cell.right > box.right)
+        container.value.scrollLeft += cell.left - left;
+    }
+  },
+  { immediate: true },
+);
 </script>
 <template>
-  <div class="table-scroll">
+  <div class="table-scroll" ref="container">
     <table class="source-table">
       <tbody>
         <tr v-for="(line, i) in table.cells" :key="i">
@@ -25,6 +50,7 @@ const emit = defineEmits<{
           <td
             v-for="cell in line"
             :key="cell.col"
+            :data-coordinate="cell.coordinate"
             :class="{
               highlight: locate.includes(cell.coordinate),
               pickable: mappingOpen,

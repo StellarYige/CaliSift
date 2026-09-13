@@ -703,6 +703,8 @@ main {
   font-size: 11px;
   color: var(--muted);
   padding: 4px 0 14px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 .draft-list {
   max-height: 625px;
@@ -723,8 +725,55 @@ main {
   min-width: 0;
   overflow-wrap: anywhere;
 }
-.draft-panel .event-body {
-  cursor: pointer;
+.review-counts,
+.draft-actions,
+.evidence-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+.review-counts {
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+}
+.review-counts span,
+.evidence-context {
+  border-radius: 8px;
+  background: var(--tint);
+  padding: 6px 10px;
+}
+.evidence-context {
+  margin-bottom: 12px;
+  overflow-wrap: anywhere;
+}
+.evidence-context blockquote {
+  margin: 8px 0;
+  padding-left: 10px;
+  border-left: 3px solid var(--muted);
+  white-space: pre-wrap;
+}
+.source-caption {
+  display: block;
+  color: var(--muted);
+}
+.draft-conflict {
+  background: var(--warning-bg);
+  border-left: 3px solid var(--warning-ink);
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin: 8px 0;
+}
+.draft-conflict button,
+.other-evidence button {
+  white-space: normal;
+  text-align: left;
+}
+.preview-conflicts blockquote {
+  margin: 8px 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--warning-ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .event-date {
   font-size: 11px;
@@ -741,8 +790,12 @@ main {
   font-size: 0.8rem;
 }
 .event-row .field-warning {
-  font-size: 11px;
-  color: var(--muted);
+  font-size: 0.85rem;
+  color: var(--warning-ink);
+}
+.event-row .field-missing,
+.review-hint {
+  font-size: 0.85rem;
 }
 .count {
   font-size: 12px;

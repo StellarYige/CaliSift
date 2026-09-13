@@ -19,9 +19,17 @@ const value = reactive({
   notesText: (props.event.notes || []).join("\n"),
   next_day: !!props.event.end_date && props.event.end_date !== props.event.date,
 });
+const timeProblem = computed(() => {
+  if (value.all_day || !value.end) return "";
+  if (!value.start) return "请先填写开始时间，或清空结束时间。";
+  if (!value.next_day && value.end <= value.start)
+    return "结束时间不晚于开始时间；跨夜班次请勾选“次日结束”。";
+  return "";
+});
 function submit() {
+  if (timeProblem.value) return;
   let ending = null;
-  if (value.end && !value.all_day) {
+  if (value.end && !value.all_day && value.date) {
     const d = new Date(value.date + "T00:00:00Z");
     if (value.next_day) d.setUTCDate(d.getUTCDate() + 1);
     ending = d.toISOString().slice(0, 10);
@@ -80,7 +88,11 @@ function submit() {
       />次日结束</label
     ><label class="check"
       ><input v-model="value.all_day" type="checkbox" />明确设为全天</label
-    ><label class="span-2"
+    >
+    <p v-if="timeProblem" class="notice warning span-2" role="alert">
+      {{ timeProblem }}
+    </p>
+    <label class="span-2"
       >地点<input v-model="value.location" maxlength="2000" /></label
     ><label>班次 / 符号<input v-model="value.shift" maxlength="1000" /></label
     ><label
@@ -94,7 +106,9 @@ function submit() {
     <div class="span-2 form-footer">
       <button type="button" class="secondary" @click="emit('cancel')">
         取消</button
-      ><button class="primary" type="submit">保存修正</button>
+      ><button class="primary" type="submit" :disabled="!!timeProblem">
+        保存修正
+      </button>
     </div>
   </form>
 </template>

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from .models import Event, Report, Source
@@ -315,22 +315,64 @@ def _make_event(
             warnings.append(timing.warning)
         if timing.start:
             timing_candidates.append(timing)
+    endpoints = {"start": [], "end": []}
+    endpoint_dates = {"start": set(), "end": set()}
     for key in ("start", "end"):
         for cell in fields.get(key, []):
-            timing = parse_time(cell.value)
+            # A midnight datetime is an explicit clock in a start/end column.
+            value = (
+                cell.value.time() if isinstance(cell.value, datetime) else cell.value
+            )
+            timing = parse_time(value, end_only=key == "end")
             if timing.warning:
                 warnings.append(timing.warning)
-    start_values = {parse_time(c.value).start for c in fields.get("start", [])} - {None}
-    end_values = {parse_time(c.value).start for c in fields.get("end", [])} - {None}
+            elif timing.end:
+                warnings.append("起止时间列包含区间，需确认")
+            elif timing.start:
+                endpoints[key].append(timing)
+            elif cell.label not in EMPTY:
+                warnings.append(
+                    "开始时间无法识别" if key == "start" else "结束时间无法识别"
+                )
+            if isinstance(cell.value, datetime) or re.search(
+                r"(?:19|20|21)\d{2}\s*[年/.-]", cell.label
+            ):
+                day, messages = parse_date(cell.value, context)
+                warnings.extend(messages)
+                if day:
+                    endpoint_dates[key].add(day)
+                else:
+                    warnings.append("起止时间中的日期无法识别")
+    start_values = {t.start for t in endpoints["start"]}
+    end_values = {t.start for t in endpoints["end"]}
+    explicit_end = None
+    if any(len(days) > 1 for days in endpoint_dates.values()):
+        warnings.append("起止时间日期证据相互矛盾")
+    if endpoint_dates["start"] and endpoint_dates["start"] != {event_date}:
+        warnings.append("开始时间与日期证据相互矛盾")
+    if len(endpoint_dates["end"]) == 1:
+        explicit_end = next(iter(endpoint_dates["end"]))
     if len(start_values) > 1 or len(end_values) > 1:
         warnings.append("起止时间证据相互矛盾")
     elif start_values:
         start = next(iter(start_values))
         end = next(iter(end_values)) if end_values else None
-        if end == start:
+        day_markers = {t.next_day for t in endpoints["end"]}
+        next_day = bool(end and end < start) or True in day_markers
+        if len(day_markers) > 1:
+            warnings.append("结束时间的次日标记相互矛盾")
+        if explicit_end and event_date:
+            offset = (explicit_end - event_date).days
+            if offset not in (0, 1) or (offset == 0 and end and end <= start):
+                warnings.append("起止时间日期区间关系需确认")
+                end = None
+            next_day = offset == 1
+        if end == start and not next_day:
             warnings.append("起止时间相同，区间关系需确认")
         else:
-            timing_candidates.append(TimeValue(start, end, bool(end and end < start)))
+            timing_candidates.append(TimeValue(start, end, next_day))
+    elif end_values:
+        warnings.append("缺少开始时间，无法确定时间区间")
     if not timing_candidates and shift in legends:
         timing, legend_evidence = legends[shift]
         if timing.warning:
@@ -342,7 +384,7 @@ def _make_event(
     if timing_candidates:
         # A date-time cell can corroborate the start of an explicit range.
         starts = {t.start for t in timing_candidates}
-        ends = {t.end for t in timing_candidates if t.end}
+        ends = {(t.end, t.next_day) for t in timing_candidates if t.end}
         if len(starts) > 1 or len(ends) > 1:
             warnings.append("时间证据相互矛盾")
         else:
@@ -361,6 +403,9 @@ def _make_event(
                 "有效范围",
                 "区间关系",
                 "缺少缓存",
+                "无法识别",
+                "缺少开始时间",
+                "列包含区间",
             )
         )
         for w in warnings
@@ -501,7 +546,14 @@ def _matrix(sheet, bounds, name, context, filename, file_id, title, legends):
                     fields.update(_matrix_metadata(sheet, bounds, name_cell, "row"))
                     fields.update(
                         _axis_labels(
-                            sheet, ((rr, cc) for rr in range(r - 1, date_cell.row, -1))
+                            sheet,
+                            (
+                                (rr, cc)
+                                for rr in range(r - 1, date_cell.row, -1)
+                                if not sheet.at(rr, c).label
+                                or field_name(sheet.at(rr, c).value)
+                                in {"name", "date", "shift", "time"}
+                            ),
                         )
                     )
                     row_results.append(
@@ -530,7 +582,14 @@ def _matrix(sheet, bounds, name, context, filename, file_id, title, legends):
                     fields.update(_matrix_metadata(sheet, bounds, name_cell, "column"))
                     fields.update(
                         _axis_labels(
-                            sheet, ((rr, cc) for cc in range(c - 1, date_cell.col, -1))
+                            sheet,
+                            (
+                                (rr, cc)
+                                for cc in range(c - 1, date_cell.col, -1)
+                                if not sheet.at(r, cc).label
+                                or field_name(sheet.at(r, cc).value)
+                                in {"name", "date", "shift", "time"}
+                            ),
                         )
                     )
                     col_results.append(
@@ -580,6 +639,14 @@ def _matrix(sheet, bounds, name, context, filename, file_id, title, legends):
                             sheet, ((rr, c) for rr in range(r - 1, r0 - 1, -1))
                         )
                     )
+                # Merged date headings can have shift/time subheadings on the
+                # same axis as the date, above/left of the person-filled cell.
+                for axis in (
+                    ((rr, c) for rr in range(r - 1, above.row, -1)) if above else (),
+                    ((r, cc) for cc in range(c - 1, left.col, -1)) if left else (),
+                ):
+                    for key, cells in _axis_labels(sheet, axis).items():
+                        fields.setdefault(key, []).extend(cells)
                 events.append(
                     _make_event(
                         sheet,

@@ -66,15 +66,23 @@ def parse_date(
     s = numeric_chinese(text(value))
     if not s:
         return None, []
-    date_mentions = re.findall(r"(?:\d{4}[年/.-])?\d{1,2}[月/.-]\d{1,2}(?:日|号)?", s)
+    # Do not read the minutes on either side of a time-range dash as month/day.
+    left, right = r"(?<![\d/.:：-])", r"(?!\d|\s*[:：点时])"
+    date_mentions = re.findall(
+        left + r"(?:\d{4}\s*[年/.-]\s*)?\d{1,2}\s*[月/.-]\s*\d{1,2}(?:日|号)?" + right,
+        s,
+    )
+    date_mentions = [re.sub(r"\s+", "", mention) for mention in date_mentions]
     if len(set(date_mentions)) > 1:
         return None, ["一个单元格包含多个日期，需确认"]
     y, m, d = None, None, None
     full = re.search(
-        r"(?<!\d)((?:19|20|21)\d{2})\s*[年/.-]\s*(\d{1,2})\s*[月/.-]\s*(\d{1,2})(?:日|号)?(?!\d)",
+        left
+        + r"((?:19|20|21)\d{2})\s*[年/.-]\s*(\d{1,2})\s*[月/.-]\s*(\d{1,2})(?:日|号)?"
+        + right,
         s,
     )
-    md = re.search(r"(?<![\d/.-])(\d{1,2})\s*[月/.-]\s*(\d{1,2})(?:日|号)?(?!\d)", s)
+    md = re.search(left + r"(\d{1,2})\s*[月/.-]\s*(\d{1,2})(?:日|号)?" + right, s)
     day_only = re.fullmatch(
         r"(\d{1,2})(?:日|号)?(?:\s*[（(]?(?:周|星期)[一二三四五六日天][）)]?)?", s
     )
@@ -110,7 +118,7 @@ class TimeValue:
     warning: str | None = None
 
 
-def parse_time(value) -> TimeValue:
+def parse_time(value, *, end_only: bool = False) -> TimeValue:
     if isinstance(value, datetime):
         # Excel date-only cells are datetime at midnight: do not fabricate 00:00.
         return (
@@ -126,20 +134,28 @@ def parse_time(value) -> TimeValue:
         and 0 <= value < 1
     ):
         minutes = round(value * 24 * 60)
+        if minutes >= 24 * 60:
+            return TimeValue(warning="时间超出有效范围（取整后达到次日）")
         return TimeValue(f"{minutes // 60:02}:{minutes % 60:02}")
     s = numeric_chinese(text(value)).replace("：", ":")
     if not s:
         return TimeValue()
+    # Handle ranges with a shared hour suffix before matching individual clocks.
+    hours = re.fullmatch(
+        r"\s*(\d{1,2})\s*[-—–~～至到]\s*(次日)?\s*(\d{1,2})\s*(?:时|点)?\s*", s
+    )
+    if hours:
+        h1, h2 = int(hours[1]), int(hours[3])
+        if h1 >= 24 or h2 > 24:
+            return TimeValue(warning="时间超出有效范围")
+        end = "00:00" if h2 == 24 else f"{h2:02}:00"
+        next_day = bool(hours[2]) or h2 == 24 or h2 < h1
+        if h1 == h2 and not next_day:
+            return TimeValue(warning="起止时间相同，区间关系需确认")
+        return TimeValue(f"{h1:02}:00", end, next_day)
     pattern = r"(上午|下午|晚上|中午|凌晨)?\s*(\d{1,2})(?::(\d{1,2})|[点时](?:(\d{1,2})分?|(半))?)"
     matches = list(re.finditer(pattern, s))
     if not matches:
-        # Bare hours accepted only as an explicit hour range, never as dates.
-        m = re.fullmatch(r"\s*(\d{1,2})\s*[-—–~～至到]\s*(\d{1,2})\s*(?:时|点)?\s*", s)
-        if m:
-            h1, h2 = map(int, m.groups())
-            if h1 < 24 and h2 <= 24:
-                end = "00:00" if h2 == 24 else f"{h2:02}:00"
-                return TimeValue(f"{h1:02}:00", end, h2 == 24 or h2 < h1)
         return TimeValue()
     if len(matches) > 2:
         return TimeValue(warning="一个单元格包含多个时间段，需确认")
@@ -149,19 +165,22 @@ def parse_time(value) -> TimeValue:
     for i, match in enumerate(matches):
         period, hour, minute, chinese_minute, half = match.groups()
         h, mins = int(hour), int(minute or chinese_minute or (30 if half else 0))
-        period = period or previous_period
+        between = s[matches[i - 1].end() : match.start()] if i else ""
+        period = period or (previous_period if "次日" not in between else None)
         previous_period = period
         if period in ("下午", "晚上", "中午") and h < 12:
             h += 12
         elif period in ("上午", "凌晨") and h == 12:
             h = 0
-        if h == 24 and mins == 0 and i == 1:
+        if h == 24 and mins == 0 and (i == 1 or end_only):
             h, midnight_end = 0, True
         if not 0 <= h < 24 or not 0 <= mins < 60:
             return TimeValue(warning="时间超出有效范围")
         times.append(f"{h:02}:{mins:02}")
     if len(times) == 1:
-        return TimeValue(times[0])
+        return TimeValue(
+            times[0], next_day=midnight_end or "次日" in s[: matches[0].start()]
+        )
     between = s[matches[0].end() : matches[1].start()]
     if not re.search(r"[-—–~～至到]", between):
         return TimeValue(warning="时间之间缺少明确区间关系")

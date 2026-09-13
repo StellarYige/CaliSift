@@ -45,7 +45,7 @@ it("keeps original draft indices when pending results are sorted and filtered", 
   expect(w.findAll("h3")[0].text()).toBe("需核对");
   await w.findAll(".event-row button")[0].trigger("click");
   expect(w.emitted("edit")![0]).toEqual([1]);
-  await w.findAll(".draft-summary input")[1].setValue(true);
+  await w.find('select[aria-label="核对范围"]').setValue("pending");
   await w.findAll(".draft-summary input")[0].setValue(true);
   expect(w.emitted("update:checked")!.at(-1)).toEqual([[1]]);
 });

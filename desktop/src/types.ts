@@ -80,6 +80,11 @@ export type DraftEvent = {
   category?: string;
   field_basis?: Record<string, string>;
 };
+export type DraftConflict = {
+  event_ids: string[];
+  kind: "definite" | "possible";
+  message: string;
+};
 export type ImportJob = {
   id: string;
   workspace_id: string;

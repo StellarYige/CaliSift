@@ -158,6 +158,9 @@ class Application:
                 indexes.add(index)
                 before = deepcopy(values[index])
                 candidate = normalized({**before, **edit["values"]})
+                if edit["values"].get("status") == "confirmed":
+                    # Explicit review clears warnings; their original text stays in history.
+                    candidate["warnings"] = []
                 candidate["reviews"] = (
                     before.get("reviews", [])
                     + [
@@ -173,6 +176,9 @@ class Application:
                 values[index] = candidate
             job["report"]["events"] = [e for e in values if e["status"] == "confirmed"]
             job["report"]["pending"] = [e for e in values if e["status"] == "pending"]
+            job["report"]["conflicts"] = detect_conflicts(
+                [SimpleNamespace(**e) for e in values]
+            )
             self.store.put("job", job_id, job["workspace_id"], job)
             return self.jobs.public(job)
 
@@ -328,7 +334,27 @@ class Application:
             )
         else:
             result = transform(current, expected_version, operation)
-        result.pop("report", None)
+        report = result.pop("report", {})
+        affected = {e["id"] for e in result["summary"]["added"]}
+        affected.update(e["id"] for e in result["summary"]["changed"])
+        event_by_id = {e["id"]: e for e in report.get("events", [])}
+        result["summary"]["schedule_conflicts"] = [
+            conflict
+            for conflict in report.get("conflicts", [])
+            if affected.intersection(conflict["event_ids"])
+        ]
+        conflict_ids = {
+            eid
+            for c in result["summary"]["schedule_conflicts"]
+            for eid in c["event_ids"]
+        }
+        result["summary"]["schedule_conflict_events"] = {
+            eid: {
+                k: event_by_id[eid].get(k)
+                for k in ("id", "title", "date", "start", "end", "end_date", "sources")
+            }
+            for eid in sorted(conflict_ids)
+        }
         preview = self.store.preview(workspace_id, result, dependency)
         if operation["type"] == "update":
             preview["old_candidates"] = [

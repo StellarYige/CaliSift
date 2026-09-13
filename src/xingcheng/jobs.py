@@ -125,6 +125,13 @@ class JobManager:
         for file in result["files"]:
             report = file.get("report")
             if report:
+                file["source_file_ids"] = list(
+                    dict.fromkeys(
+                        f["file_id"]
+                        for f in report.get("files", [])
+                        if f.get("file_id")
+                    )
+                )
                 file["count"] = len(report.get("events", [])) + len(
                     report.get("pending", [])
                 )

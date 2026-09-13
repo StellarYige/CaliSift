@@ -1,0 +1,32 @@
+{
+  "split": "development",
+  "independent_review": false,
+  "synthetic_files": [
+    "samples/九月排班.csv",
+    "samples/培训通知.csv",
+    "tests/fixtures/9月排班表.xlsx",
+    "tests/fixtures/培训安排.xlsx",
+    "tests/fixtures/国庆值班表.xlsx",
+    "tests/fixtures/冲突与重复.xlsx",
+    "tests/fixtures/纵向排班.xls",
+    "tests/fixtures/考试安排.csv",
+    "tests/fixtures/合并表头.xlsx",
+    "tests/fixtures/周期课表待确认.xlsx",
+    "tests/fixtures/accuracy/annotated-headers.csv",
+    "tests/fixtures/accuracy/names-in-rows.csv",
+    "tests/fixtures/accuracy/names-in-columns.csv",
+    "tests/fixtures/accuracy/repeated-records.csv",
+    "tests/fixtures/accuracy/start-only-course.csv"
+  ],
+  "real_anonymized_files": [],
+  "synthetic_regression_definitions": [
+    "tests/test_import_experience.py",
+    "desktop/tests/import-experience.test.ts"
+  ],
+  "provenance_notes": [
+    "samples/ 是应用内虚构体验示例；tests/fixtures/ 的八份原始表格由 scripts/generate_fixtures.py 生成。",
+    "accuracy/development.json 为五份 CSV 单独记录 synthetic 来源及原文位置标注。",
+    "新增边界回归在测试中构造，全部是合成数据，不计入独立真实布局或真实脱敏样本。",
+    "截至 2026-09-13 未在当前仓库发现已授权、标明来源的真实脱敏表格；真实样本数为零，无真实准确率或人工操作量结论。"
+  ]
+}

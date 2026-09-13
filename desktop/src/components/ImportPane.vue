@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from "vue";
+import { ref, computed, watch, onUnmounted, nextTick } from "vue";
+import type { Evidence } from "../types";
 import { call } from "../bridge";
 import { useActions } from "../actions";
 import Modal from "./Modal.vue";
@@ -48,6 +49,39 @@ const mappings = ref<Record<string, string>>({}),
   corrections = ref<Record<string, string>>({}),
   locate = ref<string[]>([]);
 const evidenceImage = ref("");
+const activeEvidence = ref<Evidence | null>(null),
+  evidenceTitle = ref(""),
+  evidencePanel = ref<HTMLElement | null>(null);
+const fieldLabels: Record<string, string> = {
+  name: "姓名",
+  date: "日期",
+  time: "时间",
+  start: "开始",
+  end: "结束",
+  value: "安排",
+  title: "事项",
+  shift: "班次",
+  location: "地点",
+  notes: "备注",
+};
+const evidenceLinks = computed(() =>
+  activeEvidence.value
+    ? Object.entries({
+        name: activeEvidence.value.name_cell,
+        ...activeEvidence.value.evidence,
+      })
+        .filter(([field]) => field !== "image")
+        .flatMap(([field, value]) =>
+          [...new Set(String(value).match(/\b[A-Z]+\d+\b/g) || [])].map(
+            (coordinate) => ({
+              field,
+              label: fieldLabels[field] || field,
+              coordinate,
+            }),
+          ),
+        )
+    : [],
+);
 const mappingOpen = ref(false),
   mapField = ref("header"),
   mapLayout = ref("records"),
@@ -133,6 +167,21 @@ async function choose(kind: string) {
 async function resume(id: string) {
   await run(async () => accept(await call("get_job", { job_id: id })));
 }
+async function sourceCall(
+  method: string,
+  payload: Record<string, unknown>,
+  seq: number,
+) {
+  try {
+    const value = await call(method, payload);
+    return seq === sequence ? value : null;
+  } catch (error) {
+    // A committed job has already cleaned its staged file. Late reads from a
+    // previous file, job or unmounted workbench must not notify the next screen.
+    if (seq !== sequence) return null;
+    throw error;
+  }
+}
 async function loadFile() {
   const seq = ++sequence;
   table.value = null;
@@ -141,18 +190,30 @@ async function loadFile() {
   ocrEdits.value = {};
   locate.value = [];
   evidenceImage.value = "";
-  if (!currentFile.value || job.value.status === "committed") return;
+  activeEvidence.value = null;
+  sheetIndex.value = 0;
+  if (!currentFile.value || job.value.status === "committed") return false;
+  const jobId = job.value.id,
+    fileId = selected.value;
   if ([".png", ".jpg", ".jpeg"].includes(currentFile.value.suffix)) {
-    const value = await call("image_preview", {
-      job_id: job.value.id,
-      file_id: selected.value,
-    });
-    if (seq !== sequence) return;
+    const value = await sourceCall(
+      "image_preview",
+      {
+        job_id: jobId,
+        file_id: fileId,
+      },
+      seq,
+    );
+    if (seq !== sequence) return false;
     image.value = value;
-    const details = await call("ocr_details", {
-      job_id: job.value.id,
-      file_id: selected.value,
-    });
+    const details = await sourceCall(
+      "ocr_details",
+      {
+        job_id: jobId,
+        file_id: fileId,
+      },
+      seq,
+    );
     if (seq === sequence) {
       ocr.value = details;
       ocrEdits.value = Object.fromEntries(
@@ -160,22 +221,35 @@ async function loadFile() {
       );
     }
   } else {
-    const value = await call("table", {
-      job_id: job.value.id,
-      file_id: selected.value,
-    });
+    const value = await sourceCall(
+      "table",
+      {
+        job_id: jobId,
+        file_id: fileId,
+      },
+      seq,
+    );
     if (seq === sequence) table.value = value;
   }
+  return seq === sequence;
 }
 async function tablePage(row: number, col: number, sheet = sheetIndex.value) {
-  table.value = await call("table", {
-    job_id: job.value.id,
-    file_id: selected.value,
-    row,
-    col,
-    sheet,
-  });
+  const seq = ++sequence;
+  const value = await sourceCall(
+    "table",
+    {
+      job_id: job.value.id,
+      file_id: selected.value,
+      row,
+      col,
+      sheet,
+    },
+    seq,
+  );
+  if (seq !== sequence) return false;
+  table.value = value;
   sheetIndex.value = sheet;
+  return true;
 }
 async function start(retry?: string[]) {
   await run(async () => {
@@ -226,6 +300,7 @@ async function makePreview() {
   });
 }
 async function commit() {
+  sequence++;
   await run(async () => {
     const value = await call("commit_change", {
       preview_id: preview.value.preview_id,
@@ -251,40 +326,83 @@ async function saveDraft(values: any) {
     notify("修正已保留在草稿中，确认导入后加入日历");
   });
 }
-async function showEvidence(entry: any) {
+async function focusEvidence(coordinate: string) {
+  const match = coordinate.match(/^([A-Z]+)(\d+)$/);
+  if (!match || !table.value) return;
+  let col = 0;
+  for (const c of match[1]!) col = col * 26 + c.charCodeAt(0) - 64;
+  if (
+    await tablePage(
+      Math.floor((Number(match[2]) - 1) / 50) * 50,
+      Math.floor((col - 1) / 20) * 20,
+    )
+  ) {
+    locate.value = [
+      coordinate,
+      ...locate.value.filter((c) => c !== coordinate),
+    ];
+  }
+}
+async function showEvidence(entry: any, sourceIndex = 0) {
   await run(async () => {
-    const source = entry.sources?.[0];
-    if (!source) return;
-    const file = job.value.files.find(
+    const source = entry.sources?.[sourceIndex];
+    if (!source) {
+      notify("这条安排由个人规则或手动创建，没有表格原文");
+      return;
+    }
+    const exact = job.value.files.filter((f: any) =>
+      f.source_file_ids?.includes(source.file_id),
+    );
+    const named = job.value.files.filter(
       (f: any) => f.filename === source.filename,
     );
-    if (!file) return;
+    const file =
+      exact.find((f: any) => f.filename === source.filename) ||
+      exact[0] ||
+      (named.length === 1 ? named[0] : null);
+    if (!file) {
+      activeEvidence.value = source;
+      evidenceTitle.value = entry.title;
+      table.value = null;
+      image.value = "";
+      evidenceImage.value = "";
+      sequence++;
+      notify("无法唯一定位原文件，请先核对下方原文摘录", true);
+      return;
+    }
     selected.value = file.id;
-    await loadFile();
-    if (source.evidence?.image)
-      evidenceImage.value = await call("evidence", {
-        id: source.evidence.image,
-      });
-    const refs = [
-      source.name_cell,
-      ...Object.values(source.evidence || {}).flatMap(
-        (v: any) => String(v).match(/[A-Z]+\d+/g) || [],
-      ),
-    ];
-    locate.value = refs;
-    const match = String(source.name_cell).match(/([A-Z]+)(\d+)/);
-    if (match && table.value) {
-      let col = 0;
-      for (const c of match[1]) col = col * 26 + c.charCodeAt(0) - 64;
+    if (!(await loadFile())) return;
+    activeEvidence.value = source;
+    evidenceTitle.value = entry.title;
+    if (source.evidence?.image) {
+      const seq = sequence;
+      const value = await sourceCall(
+        "evidence",
+        {
+          id: source.evidence.image,
+        },
+        seq,
+      );
+      if (seq !== sequence) return;
+      evidenceImage.value = value;
+    }
+    locate.value = evidenceLinks.value.map((link) => link.coordinate);
+    if (table.value) {
       const si = table.value.sheets.findIndex(
         (s: any) => s.name === source.sheet,
       );
-      await tablePage(
-        Math.floor((Number(match[2]) - 1) / 50) * 50,
-        Math.floor((col - 1) / 20) * 20,
-        Math.max(0, si),
-      );
+      if (si < 0) throw Error("原工作表不存在，请核对原文摘录");
+      sheetIndex.value = si;
+      const target = ["value", "time", "start", "date", "title", "name"]
+        .map((field) =>
+          evidenceLinks.value.find((link) => link.field === field),
+        )
+        .find(Boolean);
+      if (target) await focusEvidence(target.coordinate);
     }
+    await nextTick();
+    evidencePanel.value?.focus({ preventScroll: true });
+    evidencePanel.value?.scrollIntoView?.({ block: "nearest" });
   });
 }
 async function mapCell(cell: any) {
@@ -384,6 +502,7 @@ watch(
 watch(
   () => props.workspace.id,
   () => {
+    sequence++;
     job.value = null;
     refreshJobs();
   },
@@ -574,7 +693,13 @@ defineExpose({ accept, resume });
           ><span class="truncate">{{ file.filename }}</span
           ><span class="badge" :class="{ warning: file.status === 'error' }">{{
             statusLabel[file.status]
-          }}</span>
+          }}</span
+          ><span
+            v-if="file.status === 'done'"
+            class="badge"
+            :class="{ warning: !file.count }"
+            >{{ file.count || 0 }} 项</span
+          >
         </button>
       </div>
       <div v-if="currentFile?.error" class="notice warning">
@@ -583,6 +708,14 @@ defineExpose({ accept, resume });
           重试此文件
         </button>
       </div>
+      <p
+        v-if="currentFile?.status === 'done' && currentFile.count === 0"
+        class="notice warning"
+      >
+        此文件没有提取出“{{
+          workspace.name
+        }}”的安排。请检查原文中的完整姓名及表格布局；相似姓名不会自动匹配。
+      </p>
       <label class="panel-size"
         >原文区域宽度
         <input
@@ -601,7 +734,12 @@ defineExpose({ accept, resume });
         />
       </label>
       <div class="review-grid" :style="{ '--panel-ratio': panelRatio + '%' }">
-        <section class="card evidence-panel">
+        <section
+          class="card evidence-panel"
+          ref="evidencePanel"
+          tabindex="-1"
+          aria-label="原文与依据"
+        >
           <header class="panel-heading">
             <h2>原文与依据</h2>
             <button
@@ -612,6 +750,34 @@ defineExpose({ accept, resume });
               {{ mappingOpen ? "关闭布局校正" : "校正表格布局" }}
             </button>
           </header>
+          <div
+            v-if="activeEvidence"
+            class="evidence-context"
+            aria-live="polite"
+          >
+            <h3>{{ evidenceTitle }} · 原文</h3>
+            <p>
+              {{ activeEvidence.filename }} · {{ activeEvidence.sheet }}
+              <span v-if="activeEvidence.hidden" class="badge warning"
+                >隐藏工作表</span
+              >
+            </p>
+            <blockquote>
+              {{
+                activeEvidence.excerpt || "未保存文字摘录，请查看原表或图片。"
+              }}
+            </blockquote>
+            <div v-if="table" class="evidence-links" aria-label="定位原文字段">
+              <button
+                v-for="link in evidenceLinks"
+                :key="link.field + link.coordinate"
+                class="text-button"
+                @click="run(() => focusEvidence(link.coordinate))"
+              >
+                {{ link.label }} {{ link.coordinate }}
+              </button>
+            </div>
+          </div>
           <p v-if="evidenceImage" class="muted">本条安排的局部依据</p>
           <img
             v-if="evidenceImage"
@@ -742,6 +908,7 @@ defineExpose({ accept, resume });
             </p>
             <DraftList
               :entries="entries"
+              :conflicts="job.report.conflicts || []"
               v-model:checked="checked"
               @evidence="showEvidence"
               @edit="

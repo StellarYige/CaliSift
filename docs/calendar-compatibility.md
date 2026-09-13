@@ -2,6 +2,8 @@
 
 ICS 是静态文件。稳定 UID 和修订序号为客户端提供身份依据，不能要求客户端一定按它们更新或取消事项。
 
+2026-09-13 的导入体验修改已将快照限制、专用日历步骤及导出记录的含义放到桌面界面。本轮验证本机文件生成，**没有重跑下方外部客户端测试**；新增与未测范围见 [导入体验验证记录](import-experience-verification.md)。
+
 2026-09-08 在 Windows 11 x64 上运行 Mozilla 官方 Thunderbird **155.0**，使用独立临时用户配置，不登录邮件账号。测试启动真实 Thunderbird，调用与其导入界面相同的 `getItemsFromIcsFile` / `putItemsIntoCal`，再从 Thunderbird 本地日历读取实际保存值。**该检查覆盖真实导入器和本地存储，没有操作 Thunderbird 原生文件选择器，也没有验证通知实际弹出。**
 
 | 内容 | 实测结果 |

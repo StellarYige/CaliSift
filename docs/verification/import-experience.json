@@ -1,0 +1,137 @@
+{
+  "date": "2026-09-13",
+  "scope": "Current local desktop source changes; no publishing, deployment, accounts or cloud services",
+  "provenance": {
+    "registry": "tests/fixtures/table-corpus.json",
+    "existing_synthetic_tables": 15,
+    "real_anonymized_tables": 0,
+    "independent_acceptance_passed": false,
+    "manual_correction_operations": null
+  },
+  "baseline": {
+    "python_passed": 256,
+    "python_skipped": 1,
+    "desktop_passed": 11
+  },
+  "final_checks": {
+    "python": {
+      "passed": 290,
+      "skipped": 1,
+      "failed": 0,
+      "statement_branch_coverage_percent": 91.02,
+      "required_coverage_percent": 90,
+      "require_real_ocr": true,
+      "skip_reason": "Current Windows account cannot create symbolic links",
+      "warnings": 2,
+      "warning_summary": "Existing FastAPI/Starlette test dependency deprecations"
+    },
+    "desktop_vitest": {
+      "passed": 21,
+      "failed": 0
+    },
+    "historical_node": {
+      "passed": 25,
+      "failed": 0
+    },
+    "desktop_build": {
+      "typecheck_passed": true,
+      "vite_build_passed": true,
+      "node_version": "24.18.0"
+    },
+    "git_diff_check": {
+      "passed": true
+    }
+  },
+  "regression_reproduction": {
+    "initial_new_parser_cases_failed": 18,
+    "initial_new_parser_cases_passed": 1,
+    "existing_merged_header_bug_reproduced": true,
+    "stale_source_error_reproduced_in_native_screenshot": true
+  },
+  "native_artifact_directory": "artifacts/import-experience/20260913-151903",
+  "native_final_error_toast_absent_assertion_passed": true,
+  "native": {
+    "passed": true,
+    "timestamp": "2026-09-13T07:19:07.489809+00:00",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "python": "3.11.9",
+    "renderer": "WebView2",
+    "build": "source",
+    "provenance": "synthetic",
+    "real_anonymized_samples": 0,
+    "native_file_dialogs_tested": false,
+    "native_drag_drop_tested": false,
+    "external_calendar_clients_tested": [],
+    "completed": [
+      "Built-in CSV samples parsed by real workers; source evidence highlighted",
+      "Definite conflict filter and source lookup; editing refreshes conflict count",
+      "Import preview exposes overlap with an already saved sample and both original excerpts",
+      "Missing date/time reviewed in UI; three events committed to local SQLite",
+      "Snapshot warning, dedicated-calendar guidance, real ICS bridge save (dialog path supplied by test)"
+    ],
+    "measured_capture_viewports": {
+      "review-wide": {
+        "width": 1266,
+        "height": 823,
+        "device_pixel_ratio": 1.25
+      },
+      "review-narrow-dark-20": {
+        "width": 706,
+        "height": 723,
+        "device_pixel_ratio": 1.25
+      },
+      "conflict-with-saved-preview": {
+        "width": 1266,
+        "height": 783,
+        "device_pixel_ratio": 1.25
+      },
+      "export-wide": {
+        "width": 1266,
+        "height": 783,
+        "device_pixel_ratio": 1.25
+      },
+      "export-narrow-dark-20": {
+        "width": 706,
+        "height": 723,
+        "device_pixel_ratio": 1.25
+      }
+    },
+    "bridge_errors": [
+      {
+        "method": "table",
+        "error": "单文件必须为 1 字节至 10 MiB"
+      }
+    ],
+    "exported_events": 7,
+    "requested_window_sizes": [
+      [
+        1280,
+        820
+      ],
+      [
+        720,
+        760
+      ]
+    ],
+    "font_sizes": [
+      14,
+      20
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "untested_this_round": [
+    "macOS desktop",
+    "Linux desktop",
+    "Windows installer and clean-machine installation",
+    "Native file open/save dialogs",
+    "Native drag/drop and clipboard",
+    "Full DPI matrix",
+    "Apple Calendar, iOS, Android, Outlook",
+    "Thunderbird re-import/update/deletion (historical evidence only)",
+    "Actual notification delivery",
+    "Real anonymized tables and independent real-photo acceptance"
+  ]
+}

@@ -2,6 +2,8 @@
 
 开发集与独立验收集分开。`tests/fixtures/accuracy/development.json` 包含 5 个表格样本、3 类布局；`tests/fixtures/ocr/regression-manifest.json` 包含同一明细布局的 6 张合成图片。两者都不能证明真实照片的通用准确率。
 
+现有 15 份表格的来源分类另见 [table-corpus.json](../tests/fixtures/table-corpus.json)：2 份应用示例、8 份生成的 Excel/CSV、上述 5 份标注 CSV 都为合成样本；真实脱敏表格列表目前为空。新增边界回归在 `tests/test_import_experience.py` 中构造，单列为合成回归，不增加真实样本数或独立布局数。直接读取已有文件的检查、缺项与平台范围见 [导入体验验证记录](import-experience-verification.md)。
+
 ```sh
 python -m scripts.evaluate_accuracy tests/fixtures/accuracy/development.json --output artifacts/table-accuracy.json
 python -m scripts.evaluate_accuracy tests/fixtures/ocr/regression-manifest.json --output artifacts/image-accuracy.json
