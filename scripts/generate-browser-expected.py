@@ -20,5 +20,5 @@ values = [
     for p in paths
 ]
 (ROOT / "tests/fixtures/browser-expected.json").write_text(
-    json.dumps(values, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    json.dumps(values, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n"
 )

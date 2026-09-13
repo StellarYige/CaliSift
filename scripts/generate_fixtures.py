@@ -87,7 +87,7 @@ def xls_bytes(rows, merges=None, datemode=False) -> bytes:
 
 def csv_bytes(rows, encoding="utf-8-sig", delimiter=",") -> bytes:
     output = io.StringIO(newline="")
-    csv.writer(output, delimiter=delimiter).writerows(rows)
+    csv.writer(output, delimiter=delimiter, lineterminator="\n").writerows(rows)
     return output.getvalue().encode(encoding)
 
 
