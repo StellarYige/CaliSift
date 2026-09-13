@@ -32,6 +32,8 @@ Python 领域与业务回归 **218 项通过**；Vue 和 IndexedDB 单元测试 
 
 本机静态服务器上的 `/` 与 `/CaliSift/` 均已逐文件验证 **219 项文件**的 SHA-256、浏览器必需的 MIME 类型和缺失资源 404。应用离线资源约 **76.3 MiB**；其中包含模型、字典、Python/WASM、许可证及对应源码。`sw.js` 和离线清单另计入发行文件校验。
 
+首次云端运行发现 Windows CI 将 `.mjs` 返回为 `text/plain`，三个浏览器均拒绝加载模块，部署门禁正确阻止发布。已把静态服务器的 MIME 类型改为显式映射，并随 ZIP 提供该服务器；CI 在浏览器测试前检查全部静态文件，失败即停止。该问题与解析/OCR 输出无关，但必须修正后重新执行完整矩阵。
+
 本机未安装 Docker。Actions 的 `container-check` 会从同次构建的完整 ZIP 启动只读 Nginx/Compose，检查根路径、子路径、文件哈希和 MIME，成功后才能部署 Pages。部署后的 `production-check` 再核对公开站点与 ZIP 的字节，并在全新 Chrome 配置中完成表格识别、离线准备、离线真实 OCR 和 ICS 下载。
 
 每次执行的浏览器版本、结果、截图和请求记录保留在 [Web checks and Pages](https://github.com/StellarYige/CaliSift/actions/workflows/web.yml) 对应运行的 `browser-verification`、`container-verification`、`production-verification` 产物。静态 ZIP 与 ZIP SHA-256 同时作为 `calisift-static-web` 产物和站点公开下载，部署使用同次已验证的应用字节。

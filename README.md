@@ -35,7 +35,7 @@ ICS 是导出时的安排快照。之后的修改或取消不会同步到外部�
 ```sh
 npm ci --prefix web
 npm run build
-python -m http.server 8080 --bind 127.0.0.1 --directory web/dist
+python scripts/serve-web.py --port 8080
 ```
 
 开发环境、验证和打包步骤见[自部署说明](docs/self-hosting.md)和[开发说明](docs/development.md)。`main` 经 Actions 检查后部署 GitHub Pages，不使用额外发布分支。

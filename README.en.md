@@ -17,7 +17,7 @@ Only the web product is maintained from 0.4.0-alpha.1. No new phone or desktop a
 ```sh
 npm ci --prefix web
 npm run build
-python -m http.server 8080 --bind 127.0.0.1 --directory web/dist
+python scripts/serve-web.py --port 8080
 ```
 
 The complete static ZIP contains the same app, runtime, models, dictionary, checksums and Docker/Compose setup. GitHub Actions validates `main` before Pages deployment, without a release branch. See the linked deployment and verification documents for exact commands and limitations.

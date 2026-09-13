@@ -37,6 +37,7 @@ with zipfile.ZipFile(artifact, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as ar
         ".dockerignore",
         "compose.yaml",
         "deploy/nginx.conf",
+        "scripts/serve-web.py",
         "docs/self-hosting.md",
         "docs/verification-web.md",
         "LICENSE",

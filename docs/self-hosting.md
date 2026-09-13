@@ -15,10 +15,10 @@ ZIP 内 `web/dist/SHA256SUMS` 覆盖所有应用资源文件；`offline-manifest
 快速本地静态服务：
 
 ```sh
-python -m http.server 8080 --bind 127.0.0.1 --directory web/dist
+python scripts/serve-web.py --port 8080
 ```
 
-然后访问 http://localhost:8080/ 。Python 在这里仅提供静态文件，不处理个人文件。
+然后访问 http://localhost:8080/ 。这个随 ZIP 提供的脚本明确设置 `.mjs`、`.js`、`.wasm` 等 MIME 类型，避免 Windows 注册表差异把模块返回为 `text/plain`。Python 在这里仅提供静态文件，不处理个人文件；其他静态服务器也必须正确设置类型。
 
 ## Docker / Compose
 

@@ -1,4 +1,4 @@
-"""Development/verification static server (no business endpoints)."""
+"""Portable static server with explicit browser MIME types; no business endpoints."""
 
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
@@ -9,16 +9,29 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class Static(SimpleHTTPRequestHandler):
+    # Windows registry MIME overrides vary between machines, including CI.
+    extensions_map = {
+        **SimpleHTTPRequestHandler.extensions_map,
+        ".mjs": "application/javascript",
+        ".js": "application/javascript",
+        ".wasm": "application/wasm",
+        ".html": "text/html",
+        ".css": "text/css",
+        ".json": "application/json",
+    }
+
+    def do_GET(self):
+        if urlsplit(self.path).path == "/CaliSift":
+            self.send_response(301)
+            self.send_header("Location", "/CaliSift/")
+            self.end_headers()
+            return
+        super().do_GET()
+
     def translate_path(self, path):
         path = unquote(urlsplit(path).path)
         if path.startswith("/CaliSift/"):
             path = path[len("/CaliSift") :]
-        if path.startswith("/__fixtures/"):
-            target = (ROOT / path[len("/__fixtures/") :]).resolve()
-            allowed = (ROOT / "tests/fixtures", ROOT / "samples")
-            if not any(target.is_relative_to(x) for x in allowed):
-                return str(ROOT / "web/dist/__not_found__")
-            return str(target)
         target = (ROOT / "web/dist" / path.lstrip("/")).resolve()
         return (
             str(target)

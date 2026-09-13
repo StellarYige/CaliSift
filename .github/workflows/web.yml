@@ -36,6 +36,17 @@ jobs:
           key: browser-runtime-${{ hashFiles('resources/web-runtime-lock.json') }}
       - run: npm test
       - run: npm run build
+      - name: Verify static bytes and MIME before browser tests
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path artifacts -Force | Out-Null
+          $staticServer = Start-Process python -ArgumentList 'scripts/serve-web.py' -WindowStyle Hidden -PassThru
+          try {
+            python scripts/verify-static.py http://127.0.0.1:8766/ http://127.0.0.1:8766/CaliSift/ > artifacts/web-static-check.json
+            if ($LASTEXITCODE -ne 0) { throw 'Static verification failed' }
+          } finally {
+            $staticServer | Stop-Process -ErrorAction SilentlyContinue
+          }
       - run: node web/node_modules/playwright/cli.js install chrome msedge firefox
       - run: npm run test:browser
       - run: npm run package
@@ -45,6 +56,7 @@ jobs:
           name: browser-verification
           path: |
             artifacts/web-browser-results.json
+            artifacts/web-static-check.json
             artifacts/web-*.png
             web/test-results
       - uses: actions/upload-artifact@v4
