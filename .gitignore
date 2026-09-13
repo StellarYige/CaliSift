@@ -6,12 +6,22 @@ __pycache__/
 htmlcov/
 *.egg-info/
 node_modules/
-miniprogram/project.private.config.json
-project.private.config.json
+# Historical local developer settings are private and are not web build inputs.
+**/project.private.config.json
 artifacts/
 .env
 models/ocr/
-desktop/dist/
+web/dist/
+web/public/runtime/
+web/public/ort/
+web/public/models/
+web/public/wheels/
+web/public/samples/
+web/public/python-app.zip
+web/public/runtime-lock.json
+web/public/licenses/
+web/test-results/
+web/playwright-report/
 dist/
 build/
 *.spec.bak

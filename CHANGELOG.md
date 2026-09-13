@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.4.0-alpha.1 — 2026-09-13
+
+CaliSift now runs entirely in a browser. The Vue workbench uses local Web
+Workers for Python parsing and real OCR, with IndexedDB for workspaces,
+drafts, rules, preferences and source evidence.
+
+- Reuse the calendar, name matching, overnight time and review domain with
+  Pyodide 314.0.6 and a separate browser dependency lock.
+- Run the pinned OCR models through ONNX Runtime Web 1.23.2, using sequential
+  single-threaded WASM with cancellation and processing deadlines.
+- Replace native dialogs and directories with browser selection, drag/drop,
+  image paste and downloads. Keep old Windows and v1/v2 JSON backup imports.
+- Check revisions inside IndexedDB transactions, recover interrupted imports,
+  and retain recovery points when replacing a workspace from backup.
+- Prepare and verify all offline resources locally. Service Worker updates
+  wait for existing pages to close and preserve personal databases.
+- Deliver static files, SHA-256 checksums, a complete ZIP and static-only
+  Docker/Compose configuration. Deploy checked `main` builds through Pages.
+- Replace native shell/build tests with domain, Vue, IndexedDB and real
+  Chrome/Edge/Firefox browser coverage. See the [verification record](docs/verification-web.md)
+  for results and the limits of the synthetic corpus.
+
+The project no longer builds desktop or mobile applications. Historical
+commits, tags and published installers remain available without modification.
+
 ## 0.3.0-alpha.1 — 2026-09-08
 
 First CaliSift desktop developer preview. The existing 星程 extraction and

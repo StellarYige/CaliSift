@@ -4,8 +4,6 @@ import json
 import sys
 from unittest.mock import patch
 import pytest
-from fastapi.testclient import TestClient
-from xingcheng.api import app
 from xingcheng.parsing import parse_file
 from xingcheng.rules import validate_rules, expand_course
 from scripts.generate_fixtures import csv_bytes, NAME
@@ -145,84 +143,26 @@ def test_explicit_matrix_axes(horizontal):
     assert [e.date for e in r.events] == ["2026-09-07", "2026-09-08"]
 
 
-def test_worker_rule_path_and_layout_hint_without_network(tmp_path):
-    from xingcheng.worker import main
+def test_browser_rules_courses_and_validation():
+    from xingcheng.processing import execute
 
-    file = tmp_path / "input.csv"
-    file.write_bytes(csv_bytes([["日期", "姓名", "事项"], ["2026-09-07", NAME, "早"]]))
-    settings = dict(
-        filename="表.csv",
-        name=NAME,
-        reference_year=2026,
-        rules={
-            "shifts": [dict(name="早班", aliases=["早"], start="08:00", end="16:00")]
-        },
-    )
-    out = io.StringIO()
-    with (
-        patch.object(sys, "argv", ["worker", str(file)]),
-        patch.object(sys, "stdin", io.StringIO(json.dumps(settings))),
-        patch.object(sys, "stdout", out),
-    ):
-        main()
-    value = json.loads(out.getvalue())
-    assert value["events"][0]["start"] == "08:00"
-    assert "个人规则" in value["events"][0]["sources"][0]["evidence"]["time"]
-
-
-def test_http_rules_courses_and_ocr_failures():
-    client = TestClient(app)
     content = csv_bytes([["日期", "姓名", "事项"], ["2026-09-07", NAME, "早"]])
     rule = {"shifts": [dict(name="早班", aliases=["早"], start="08:00", end="16:00")]}
-    r = client.post(
-        "/api/parse",
-        files={"files": ("表.csv", content)},
-        data=dict(name=NAME, reference_year=2026, rules=json.dumps(rule)),
-    )
-    assert r.status_code == 200 and r.json()["events"][0]["start"] == "08:00"
-    assert (
-        client.post(
-            "/api/parse",
-            files={"files": ("表.csv", content)},
-            data=dict(name=NAME, reference_year=2026, rules="bad"),
-        ).status_code
-        == 422
-    )
+    result = execute(
+        dict(kind="parse", filename="表.csv", name=NAME, year=2026, rules=rule), content
+    )["report"]
+    assert result["events"][0]["start"] == "08:00"
+    assert "个人规则" in result["events"][0]["sources"][0]["evidence"]["time"]
     semester = dict(
         monday="2026-09-07", weeks=4, periods=[dict(start="08:00", end="08:45")]
     )
     course = dict(title="课程", weekday=2, periods=[1], parity="even")
-    r = client.post("/api/calendar/course", json=dict(course=course, semester=semester))
-    assert r.status_code == 200 and len(r.json()["events"]) == 2
-    for c in [
+    assert len(expand_course(course, semester)["events"]) == 2
+    for bad in [
         {**course, "weeks": [8]},
         {**course, "parity": "bad"},
         {**course, "title": ""},
         {**course, "week_from": 4, "week_to": 1},
     ]:
-        assert (
-            client.post(
-                "/api/calendar/course", json=dict(course=c, semester=semester)
-            ).status_code
-            == 422
-        )
-    with patch(
-        "xingcheng.ocr.recognize_isolated",
-        return_value={"events": [], "pending": [], "files": []},
-    ):
-        assert (
-            client.post(
-                "/api/ocr",
-                files={"file": ("image.png", b"x")},
-                data=dict(name=NAME, reference_year=2026),
-            ).status_code
-            == 200
-        )
-    assert (
-        client.post(
-            "/api/ocr",
-            files={"file": ("image.png", b"x")},
-            data=dict(name="甲 乙", reference_year=2026),
-        ).status_code
-        == 422
-    )
+        with pytest.raises(ValueError):
+            expand_course(bad, semester)

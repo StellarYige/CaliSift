@@ -21,7 +21,7 @@
   "real_anonymized_files": [],
   "synthetic_regression_definitions": [
     "tests/test_import_experience.py",
-    "desktop/tests/import-experience.test.ts"
+    "web/tests/import-experience.test.ts"
   ],
   "provenance_notes": [
     "samples/ 是应用内虚构体验示例；tests/fixtures/ 的八份原始表格由 scripts/generate_fixtures.py 生成。",

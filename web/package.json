@@ -1,0 +1,30 @@
+{
+  "name": "calisift-web",
+  "version": "0.4.0-alpha.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vue-tsc --noEmit && vite build && node ../scripts/finish-web.mjs",
+    "dev": "vite --host 127.0.0.1",
+    "test": "vitest run tests/",
+    "test:browser": "playwright test",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "vue": "3.5.42",
+    "onnxruntime-web": "1.23.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "6.0.8",
+    "@vue/test-utils": "2.5.0",
+    "jsdom": "30.0.1",
+    "prettier": "3.6.2",
+    "typescript": "5.9.3",
+    "vite": "8.2.2",
+    "vitest": "5.0.0",
+    "vue-tsc": "3.3.11",
+    "pyodide": "314.0.6",
+    "@playwright/test": "1.63.0",
+    "fake-indexeddb": "6.2.4"
+  }
+}

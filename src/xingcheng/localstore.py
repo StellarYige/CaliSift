@@ -1,20 +1,12 @@
-"""Transactional local state. The UI never writes an authoritative calendar."""
-
-from __future__ import annotations
+"""Serializable state. Every command is isolated; IndexedDB commits it using CAS."""
 
 import base64
-from contextlib import closing, contextmanager
+from contextlib import nullcontext
 from copy import deepcopy
-from datetime import date
 import hashlib
 import json
-import os
-from pathlib import Path
 import re
-import sqlite3
-import threading
-
-from .calendar import effective, empty_calendar, identity, now, validate_calendar
+from .calendar import empty_calendar, identity, now, validate_calendar
 
 
 class LocalError(ValueError):
@@ -31,123 +23,101 @@ def digest(value):
     return hashlib.sha256(encode(value).encode("utf-8")).hexdigest()
 
 
-def atomic_write(path, data):
-    path = Path(path)
-    temporary = path.with_name(path.name + "." + identity() + ".tmp")
-    try:
-        with temporary.open("xb") as stream:
-            stream.write(data)
-            stream.flush()
-            os.fsync(stream.fileno())
-        if temporary.read_bytes() != data:
-            raise OSError("文件回读校验失败")
-        os.replace(temporary, path)
-    finally:
-        temporary.unlink(missing_ok=True)
-
-
 class LocalStore:
-    def __init__(self, root):
-        self.root = Path(root).resolve()
-        self.root.mkdir(parents=True, exist_ok=True)
-        self.evidence_dir = self.root / "evidence"
-        self.backup_dir = self.root / "backups"
-        self.jobs_dir = self.root / "jobs"
-        for folder in (self.evidence_dir, self.backup_dir, self.jobs_dir):
-            folder.mkdir(exist_ok=True)
-        self.path = self.root / "calendar.sqlite3"
-        self.lock = threading.RLock()
-        self.session = identity()
-        with self.connection() as db:
-            version = db.execute("PRAGMA user_version").fetchone()[0]
-            if version > 2:
-                raise LocalError(
-                    "SCHEMA_TOO_NEW",
-                    "数据来自更新版本，请升级 CaliSift 后打开；原数据已保留",
-                )
-            if db.execute("PRAGMA quick_check").fetchone()[0] != "ok":
-                raise LocalError(
-                    "STORAGE_FAILED", "本机数据库损坏，请从备份恢复；原文件已保留"
-                )
-            db.executescript(
-                """
-                CREATE TABLE IF NOT EXISTS workspaces (
-                    id TEXT PRIMARY KEY, name TEXT NOT NULL, version INTEGER NOT NULL,
-                    calendar TEXT NOT NULL, updated_at TEXT NOT NULL);
-                CREATE TABLE IF NOT EXISTS event_index (
-                    workspace TEXT NOT NULL REFERENCES workspaces(id), id TEXT NOT NULL,
-                    day TEXT, ending TEXT, title TEXT, location TEXT, category TEXT,
-                    hidden INTEGER, cancelled INTEGER, archived INTEGER, status TEXT,
-                    PRIMARY KEY(workspace,id));
-                CREATE INDEX IF NOT EXISTS events_by_date ON event_index(workspace,day);
-                CREATE TABLE IF NOT EXISTS documents (
-                    kind TEXT NOT NULL, id TEXT NOT NULL, workspace TEXT NOT NULL,
-                    body TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY(kind,id));
-                CREATE INDEX IF NOT EXISTS documents_by_workspace ON documents(kind,workspace);
-                CREATE TABLE IF NOT EXISTS previews (
-                    id TEXT PRIMARY KEY, workspace TEXT NOT NULL, version INTEGER NOT NULL,
-                    session TEXT NOT NULL, body TEXT NOT NULL, receipt TEXT);
-            """
+    def __init__(self, state=None):
+        self.state = (
+            deepcopy(state)
+            if state
+            else dict(
+                schema=1,
+                workspaces={},
+                documents={},
+                previews={},
+                evidence={},
+                restore_tokens={},
+                recovery=[],
             )
-        if version == 1:
-            self.safety_backup("upgrade-v2")
-        with self.connection(True) as db:
-            if version < 2:
-                from .preferences import from_legacy
+        )
+        if self.state.get("schema") != 1:
+            raise LocalError(
+                "SCHEMA_TOO_NEW", "数据来自其他版本，请使用兼容版本；原数据已保留"
+            )
+        self.lock = nullcontext()
 
-                for row in db.execute("SELECT id,calendar FROM workspaces").fetchall():
-                    value = from_legacy(json.loads(row["calendar"]).get("settings", {}))
-                    self._put(
-                        db,
-                        "preferences",
-                        row["id"],
-                        row["id"],
-                        dict(revision=0, values=value),
-                    )
-                db.execute("PRAGMA user_version=2")
-            db.execute("DELETE FROM previews WHERE receipt IS NULL")
-
-    @contextmanager
     def connection(self, writing=False):
-        with self.lock:
-            db = sqlite3.connect(self.path, timeout=10)
-            db.row_factory = sqlite3.Row
-            try:
-                db.execute("PRAGMA foreign_keys=ON")
-                db.execute("PRAGMA busy_timeout=10000")
-                db.execute("PRAGMA synchronous=FULL")
-                if writing:
-                    db.execute("BEGIN IMMEDIATE")
-                yield db
-                db.commit()
-            except Exception:
-                db.rollback()
-                raise
-            finally:
-                db.close()
+        return nullcontext()
+
+    def set_workspace(self, wid, calendar):
+        validate_calendar(calendar)
+        self.state["workspaces"][wid] = dict(
+            id=wid,
+            name=calendar["personName"],
+            version=calendar["version"],
+            calendar=deepcopy(calendar),
+            updated_at=now(),
+        )
 
     def create_workspace(self, name, calendar=None):
         name = name.strip() if isinstance(name, str) else ""
         calendar = deepcopy(calendar) if calendar else empty_calendar(name)
-        validate_calendar(calendar)
         if name != calendar["personName"]:
             raise LocalError("INVALID_INPUT", "工作区姓名与日历不一致")
         wid = identity()
-        with self.connection(True) as db:
-            db.execute(
-                "INSERT INTO workspaces VALUES(?,?,?,?,?)",
-                (wid, name, calendar["version"], encode(calendar), now()),
-            )
-            self._index(db, wid, calendar)
-            from .preferences import Preferences, from_legacy
+        self.set_workspace(wid, calendar)
+        from .preferences import from_legacy
 
-            values = (
-                from_legacy(calendar["settings"])
-                if calendar["settings"]
-                else Preferences().model_dump()
-            )
-            self._put(db, "preferences", wid, wid, dict(revision=0, values=values))
+        self.put(
+            "preferences",
+            wid,
+            wid,
+            dict(revision=0, values=from_legacy(calendar.get("settings", {}))),
+        )
         return self.workspace(wid)
+
+    def workspace(self, wid):
+        if wid not in self.state["workspaces"]:
+            raise LocalError("NOT_FOUND", "工作区不存在，请重新选择")
+        return deepcopy(self.state["workspaces"][wid])
+
+    def workspaces(self):
+        return [
+            {k: v for k, v in w.items() if k != "calendar"}
+            for w in sorted(
+                self.state["workspaces"].values(),
+                key=lambda w: w["updated_at"],
+                reverse=True,
+            )
+        ]
+
+    def document(self, kind, item_id):
+        item = self.state["documents"].get(kind + ":" + item_id)
+        if item is None:
+            raise LocalError("NOT_FOUND", "记录不存在，请刷新后重试")
+        return deepcopy(item["body"])
+
+    def documents(self, kind, wid=None):
+        return [
+            deepcopy(d["body"])
+            for d in reversed(list(self.state["documents"].values()))
+            if d["kind"] == kind and (wid is None or d["workspace"] == wid)
+        ]
+
+    def put(self, kind, item_id, wid, value):
+        key = kind + ":" + item_id
+        value = deepcopy(value)
+        if kind in ("job", "template", "profile"):
+            previous = self.state["documents"].get(key, {}).get("body", {})
+            value["revision"] = previous.get("revision", 0) + 1
+        self.state["documents"].pop(key, None)
+        self.state["documents"][key] = dict(
+            kind=kind, workspace=wid, body=deepcopy(value)
+        )
+
+    def _put(self, db, kind, item_id, wid, value):
+        self.put(kind, item_id, wid, value)
+
+    def delete(self, kind, item_id):
+        self.state["documents"].pop(kind + ":" + item_id, None)
 
     def preferences(self, wid):
         self.workspace(wid)
@@ -157,124 +127,40 @@ class LocalStore:
         from .preferences import Preferences
 
         checked = Preferences.model_validate(values).model_dump()
-        with self.connection(True) as db:
-            row = db.execute(
-                "SELECT body FROM documents WHERE kind='preferences' AND id=?", (wid,)
-            ).fetchone()
-            if row is None:
-                raise LocalError("NOT_FOUND", "工作区不存在")
-            previous = json.loads(row[0])
-            if previous["revision"] != revision:
-                raise LocalError("VERSION_CONFLICT", "偏好已变化，请刷新设置后重试")
-            before = {c["name"] for c in previous["values"]["categories"]}
-            after = {c["name"] for c in checked["categories"]}
-            if before - after:
-                raise LocalError("INVALID_INPUT", "已有分类请停用，保留历史名称与配色")
-            result = dict(revision=revision + 1, values=checked)
-            self._put(db, "preferences", wid, wid, result)
+        previous = self.preferences(wid)
+        if previous["revision"] != revision:
+            raise LocalError("VERSION_CONFLICT", "偏好已变化，请刷新设置后重试")
+        if {c["name"] for c in previous["values"]["categories"]} - {
+            c["name"] for c in checked["categories"]
+        }:
+            raise LocalError("INVALID_INPUT", "已有分类请停用，保留历史名称与配色")
+        result = dict(revision=revision + 1, values=checked)
+        self.put("preferences", wid, wid, result)
         return result
 
     def device_preferences(self):
         from .preferences import DevicePreferences
 
-        values = self.documents("device_preferences")
-        return values[0] if values else DevicePreferences().model_dump()
+        return (
+            self.documents("device_preferences") or [DevicePreferences().model_dump()]
+        )[0]
 
     def save_device_preferences(self, values):
         from .preferences import DevicePreferences
 
-        with self.connection(True) as db:
-            checked = DevicePreferences.model_validate(
-                {**self.device_preferences(), **values}
-            ).model_dump()
-            self._put(db, "device_preferences", "device", "", checked)
+        checked = DevicePreferences.model_validate(
+            {**self.device_preferences(), **values}
+        ).model_dump()
+        self.put("device_preferences", "device", "", checked)
         return checked
-
-    def workspaces(self):
-        with self.connection() as db:
-            return [
-                dict(row)
-                for row in db.execute(
-                    "SELECT id,name,version,updated_at FROM workspaces ORDER BY updated_at DESC"
-                )
-            ]
-
-    def workspace(self, wid):
-        with self.connection() as db:
-            row = db.execute("SELECT * FROM workspaces WHERE id=?", (wid,)).fetchone()
-            if row is None:
-                raise LocalError("NOT_FOUND", "工作区不存在，请重新选择")
-            result = dict(row)
-            result["calendar"] = json.loads(row["calendar"])
-            return result
-
-    def _index(self, db, wid, calendar):
-        db.execute("DELETE FROM event_index WHERE workspace=?", (wid,))
-        values = []
-        for record in calendar["events"]:
-            event = effective(record)
-            values.append(
-                (
-                    wid,
-                    record["id"],
-                    event["date"],
-                    event["end_date"] or event["date"],
-                    event["title"],
-                    event["location"],
-                    event["category"],
-                    record["hidden"],
-                    record.get("cancelled", False),
-                    record.get("archived", False),
-                    event["status"],
-                )
-            )
-        db.executemany("INSERT INTO event_index VALUES(?,?,?,?,?,?,?,?,?,?,?)", values)
-
-    def document(self, kind, item_id):
-        with self.connection() as db:
-            row = db.execute(
-                "SELECT body FROM documents WHERE kind=? AND id=?", (kind, item_id)
-            ).fetchone()
-            if row is None:
-                raise LocalError("NOT_FOUND", "记录不存在，请刷新后重试")
-            return json.loads(row[0])
-
-    def documents(self, kind, wid=None):
-        with self.connection() as db:
-            rows = db.execute(
-                "SELECT body FROM documents WHERE kind=?"
-                + (" AND workspace=?" if wid else "")
-                + " ORDER BY updated_at DESC",
-                (kind, wid) if wid else (kind,),
-            )
-            return [json.loads(row[0]) for row in rows]
-
-    @staticmethod
-    def _put(db, kind, item_id, wid, value):
-        db.execute(
-            "INSERT OR REPLACE INTO documents VALUES(?,?,?,?,?)",
-            (kind, item_id, wid, encode(value), now()),
-        )
-
-    def put(self, kind, item_id, wid, value):
-        with self.connection(True) as db:
-            self._put(db, kind, item_id, wid, value)
-
-    def delete(self, kind, item_id):
-        with self.connection(True) as db:
-            db.execute("DELETE FROM documents WHERE kind=? AND id=?", (kind, item_id))
 
     def preview(self, wid, result, dependency=None):
         pid = identity()
-        body = dict(result=result, dependency=dependency)
-        with self.connection(True) as db:
-            db.execute(
-                "INSERT INTO previews VALUES(?,?,?,?,?,NULL)",
-                (pid, wid, result["base_version"], self.session, encode(body)),
-            )
-            db.execute(
-                "DELETE FROM previews WHERE receipt IS NULL AND rowid NOT IN (SELECT rowid FROM previews WHERE receipt IS NULL ORDER BY rowid DESC LIMIT 20)"
-            )
+        self.state["previews"][pid] = dict(
+            workspace=wid, result=deepcopy(result), dependency=dependency, receipt=None
+        )
+        while len(self.state["previews"]) > 20:
+            del self.state["previews"][next(iter(self.state["previews"]))]
         return dict(
             preview_id=pid,
             base_version=result["base_version"],
@@ -282,144 +168,97 @@ class LocalStore:
         )
 
     def commit(self, pid, expected_version):
-        with self.connection(True) as db:
-            row = db.execute("SELECT * FROM previews WHERE id=?", (pid,)).fetchone()
-            if not row:
-                raise LocalError("VERSION_CONFLICT", "预览已失效，请重新预览")
-            if row["receipt"]:
-                return json.loads(row["receipt"])
-            if row["session"] != self.session:
-                raise LocalError("VERSION_CONFLICT", "程序已重新启动，请重新预览")
-            current = db.execute(
-                "SELECT version FROM workspaces WHERE id=?", (row["workspace"],)
-            ).fetchone()
-            if (
-                current is None
-                or current[0] != expected_version
-                or expected_version != row["version"]
-            ):
-                raise LocalError("VERSION_CONFLICT", "日历已变化，请重新预览")
-            body = json.loads(row["body"])
-            dependency = body.get("dependency")
-            if dependency:
-                document = db.execute(
-                    "SELECT body FROM documents WHERE kind=? AND id=?",
-                    (dependency["kind"], dependency["id"]),
-                ).fetchone()
-                if (
-                    document is None
-                    or digest(json.loads(document[0])) != dependency["digest"]
-                ):
-                    raise LocalError("VERSION_CONFLICT", "导入草稿已变化，请重新预览")
-            result = body["result"]
-            if result["summary"].get("unresolved"):
-                raise LocalError(
-                    "CONFIRMATION_REQUIRED", "请先处理变更对应关系和个人修正冲突"
-                )
-            calendar = result["calendar"]
-            validate_calendar(calendar)
-            if calendar["version"] != expected_version + 1:
-                raise LocalError("VERSION_CONFLICT", "候选版本无效，请重新预览")
-            self.verify_evidence(calendar)
-            old_calendar = json.loads(
-                db.execute(
-                    "SELECT calendar FROM workspaces WHERE id=?", (row["workspace"],)
-                ).fetchone()[0]
+        preview = self.state["previews"].get(pid)
+        if not preview:
+            raise LocalError("VERSION_CONFLICT", "预览已失效，请重新预览")
+        if preview["receipt"]:
+            return preview["receipt"]
+        wid, result = preview["workspace"], preview["result"]
+        current = self.workspace(wid)
+        if (
+            current["version"] != expected_version
+            or result["base_version"] != expected_version
+        ):
+            raise LocalError("VERSION_CONFLICT", "日历已变化，请刷新后重新预览")
+        dependency = preview["dependency"]
+        job = None
+        if dependency:
+            job = self.document(dependency["kind"], dependency["id"])
+            if digest(job) != dependency["digest"]:
+                raise LocalError("VERSION_CONFLICT", "导入草稿已变化，请重新预览")
+        if result["summary"].get("unresolved"):
+            raise LocalError(
+                "CONFIRMATION_REQUIRED", "请先处理变更对应关系和个人修正冲突"
             )
-            if old_calendar.get("settings") != calendar.get("settings"):
-                from .preferences import from_legacy
+        calendar = result["calendar"]
+        if calendar["version"] != expected_version + 1:
+            raise LocalError("VERSION_CONFLICT", "候选版本无效，请重新预览")
+        self.verify_evidence(calendar)
+        if current["calendar"].get("settings") != calendar.get("settings"):
+            from .preferences import from_legacy
 
-                legacy = from_legacy(calendar.get("settings", {}))
-                pref = self.preferences(row["workspace"])
-                values = pref["values"]
-                values.update(
-                    font_size=legacy["font_size"], hide_rest=legacy["hide_rest"]
-                )
-                palette = {c["name"]: c["color"] for c in legacy["categories"]}
-                for category in values["categories"]:
-                    category["color"] = palette.get(category["name"], category["color"])
-                self._put(
-                    db,
-                    "preferences",
-                    row["workspace"],
-                    row["workspace"],
-                    dict(revision=pref["revision"] + 1, values=values),
-                )
-            db.execute(
-                "UPDATE workspaces SET name=?, version=?, calendar=?, updated_at=? WHERE id=?",
-                (
-                    calendar["personName"],
-                    calendar["version"],
-                    encode(calendar),
-                    now(),
-                    row["workspace"],
-                ),
+            legacy = from_legacy(calendar.get("settings", {}))
+            prefs = self.preferences(wid)
+            prefs["values"].update(
+                font_size=legacy["font_size"], hide_rest=legacy["hide_rest"]
             )
-            self._index(db, row["workspace"], calendar)
-            receipt = dict(
-                workspace_id=row["workspace"],
-                version=calendar["version"],
-                preview_id=pid,
-                job_id=(
-                    dependency["id"]
-                    if dependency and dependency["kind"] == "job"
-                    else None
-                ),
+            palette = {c["name"]: c["color"] for c in legacy["categories"]}
+            for category in prefs["values"]["categories"]:
+                category["color"] = palette.get(category["name"], category["color"])
+            self.put(
+                "preferences",
+                wid,
+                wid,
+                dict(revision=prefs["revision"] + 1, values=prefs["values"]),
             )
-            if receipt["job_id"]:
-                job = json.loads(document[0])
-                job.update(status="committed", committed_version=calendar["version"])
-                self._put(db, "job", job["id"], row["workspace"], job)
-            db.execute(
-                "UPDATE previews SET receipt=?, body=? WHERE id=?",
-                (encode(receipt), "{}", pid),
-            )
+        self.set_workspace(wid, calendar)
+        receipt = dict(
+            workspace_id=wid,
+            version=calendar["version"],
+            preview_id=pid,
+            job_id=job["id"] if job else None,
+        )
+        if job:
+            job.update(status="committed", committed_version=calendar["version"])
+            self.put("job", job["id"], wid, job)
+        preview.update(receipt=receipt, result=None, dependency=None)
         return receipt
 
-    def evidence(self, evidence_id):
-        if not isinstance(evidence_id, str) or not re.fullmatch(
-            "[a-f0-9]{20}", evidence_id
-        ):
+    def evidence(self, eid):
+        if not isinstance(eid, str) or not re.fullmatch("[a-f0-9]{20}", eid):
             raise LocalError("INVALID_INPUT", "证据编号无效")
-        path = self.evidence_dir / (evidence_id + ".jpg")
-        if not path.is_file():
-            raise LocalError("EVIDENCE_MISSING", "局部证据缺失，请从完整备份恢复")
-        data = path.read_bytes()
-        if hashlib.sha256(data).hexdigest()[:20] != evidence_id:
-            raise LocalError("EVIDENCE_MISSING", "局部证据损坏，请从完整备份恢复")
-        return data
+        try:
+            raw = base64.b64decode(self.state["evidence"][eid], validate=True)
+        except (KeyError, ValueError) as exc:
+            raise LocalError(
+                "EVIDENCE_MISSING", "局部证据缺失，请从完整备份恢复"
+            ) from exc
+        if hashlib.sha256(raw).hexdigest()[:20] != eid:
+            raise LocalError("EVIDENCE_MISSING", "局部证据校验失败，请从完整备份恢复")
+        return raw
 
     def externalize(self, value):
         value = deepcopy(value)
 
         def walk(item):
             if isinstance(item, list):
-                for child in item:
-                    walk(child)
+                for v in item:
+                    walk(v)
             elif isinstance(item, dict):
-                for key, child in item.items():
-                    if key == "crops" and isinstance(child, dict):
-                        for eid, content in child.items():
-                            if not isinstance(content, str):
-                                raise LocalError("INVALID_INPUT", "图片证据格式无效")
-                            if content.startswith("evidence:"):
-                                self.evidence(eid)
-                            else:
-                                data = base64.b64decode(content, validate=True)
-                                if hashlib.sha256(data).hexdigest()[:20] != eid:
+                for k, v in item.items():
+                    if k == "crops" and isinstance(v, dict):
+                        for eid, content in v.items():
+                            if not content.startswith("evidence:"):
+                                raw = base64.b64decode(content, validate=True)
+                                if hashlib.sha256(raw).hexdigest()[:20] != eid:
                                     raise LocalError(
-                                        "INVALID_INPUT", "图片证据校验失败"
+                                        "EVIDENCE_MISSING", "图片证据校验失败"
                                     )
-                                target = self.evidence_dir / (eid + ".jpg")
-                                if target.exists() and target.read_bytes() != data:
-                                    raise LocalError(
-                                        "EVIDENCE_MISSING", "证据编号冲突，原文件已保留"
-                                    )
-                                if not target.exists():
-                                    atomic_write(target, data)
-                            child[eid] = "evidence:" + eid
+                                self.state["evidence"][eid] = content
+                            self.evidence(eid)
+                            v[eid] = "evidence:" + eid
                     else:
-                        walk(child)
+                        walk(v)
 
         walk(value)
         self.verify_evidence(value)
@@ -431,20 +270,20 @@ class LocalStore:
 
         def walk(item):
             if isinstance(item, list):
-                for child in item:
-                    walk(child)
+                for v in item:
+                    walk(v)
             elif isinstance(item, dict):
-                for key, child in item.items():
+                for k, v in item.items():
                     if (
-                        key == "image"
-                        and isinstance(child, str)
-                        and re.fullmatch("[a-f0-9]{20}", child)
+                        k == "image"
+                        and isinstance(v, str)
+                        and re.fullmatch("[a-f0-9]{20}", v)
                     ):
-                        ids.add(child)
-                    elif key == "crops" and isinstance(child, dict):
-                        ids.update(child)
+                        ids.add(v)
+                    elif k == "crops" and isinstance(v, dict):
+                        ids.update(v)
                     else:
-                        walk(child)
+                        walk(v)
 
         walk(value)
         return ids
@@ -453,25 +292,31 @@ class LocalStore:
         for eid in self.evidence_ids(value):
             self.evidence(eid)
 
-    def safety_backup(self, reason="daily"):
-        day = date.today().isoformat()
-        if reason == "daily" and any(self.backup_dir.glob(day + "-daily-*.sqlite3")):
-            return None
-        target = self.backup_dir / (day + "-" + reason + "-" + identity() + ".sqlite3")
-        temporary = target.with_suffix(".tmp")
-        try:
-            with self.connection() as db:
-                with closing(sqlite3.connect(temporary)) as backup:
-                    db.backup(backup)
-                    if backup.execute("PRAGMA quick_check").fetchone()[0] != "ok":
-                        raise OSError("备份校验失败")
-            os.replace(temporary, target)
-        finally:
-            temporary.unlink(missing_ok=True)
-        for old in sorted(
-            self.backup_dir.glob("*.sqlite3"),
-            key=lambda p: p.stat().st_mtime,
-            reverse=True,
-        )[7:]:
-            old.unlink()
-        return target
+    def collect_evidence(self):
+        ids = self.evidence_ids(
+            [
+                self.state["workspaces"],
+                self.state["documents"],
+                self.state["recovery"],
+                self.state["restore_tokens"],
+            ]
+        )
+        self.state["evidence"] = {
+            k: v for k, v in self.state["evidence"].items() if k in ids
+        }
+
+    def safety_backup(self, reason="restore"):
+        self.state["recovery"] = (
+            self.state["recovery"]
+            + [
+                dict(
+                    created_at=now(),
+                    workspaces=deepcopy(self.state["workspaces"]),
+                    documents={
+                        k: deepcopy(v)
+                        for k, v in self.state["documents"].items()
+                        if v["kind"] != "job"
+                    },
+                )
+            ]
+        )[-2:]

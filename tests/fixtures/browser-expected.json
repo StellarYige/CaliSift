@@ -1,0 +1,2186 @@
+[
+  {
+    "file": "samples/九月排班.csv",
+    "report": {
+      "events": [
+        {
+          "date": "2026-09-08",
+          "title": "早班",
+          "shift": "早班",
+          "start": "08:00",
+          "end": "16:00",
+          "end_date": "2026-09-08",
+          "precision": "interval",
+          "location": "一号站",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "9279b1948700f86d3197",
+              "filename": "九月排班.csv",
+              "sheet": "CSV",
+              "name_cell": "A2",
+              "evidence": {
+                "date": "B2",
+                "shift": "C2",
+                "start": "D2",
+                "end": "E2",
+                "location": "F2"
+              },
+              "excerpt": "2026-09-08 | 早班 | 08:00 | 16:00 | 一号站",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "c3c1d9cab515a32d79b9",
+          "reviews": []
+        },
+        {
+          "date": "2026-09-10",
+          "title": "夜班",
+          "shift": "夜班",
+          "start": "20:00",
+          "end": "08:00",
+          "end_date": "2026-09-11",
+          "precision": "interval",
+          "location": "一号站",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "9279b1948700f86d3197",
+              "filename": "九月排班.csv",
+              "sheet": "CSV",
+              "name_cell": "A3",
+              "evidence": {
+                "date": "B3",
+                "shift": "C3",
+                "start": "D3",
+                "end": "E3",
+                "location": "F3"
+              },
+              "excerpt": "2026-09-10 | 夜班 | 20:00 | 次日08:00 | 一号站",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "dff74622108aeb38feb7",
+          "reviews": []
+        }
+      ],
+      "pending": [],
+      "files": [
+        {
+          "file_id": "9279b1948700f86d3197",
+          "filename": "九月排班.csv",
+          "status": "ok",
+          "sheets": [
+            {
+              "sheet": "CSV",
+              "status": "matched",
+              "name_matches": 2,
+              "events": 2,
+              "pending": 0,
+              "recognized_layout": true,
+              "hidden": false,
+              "warnings": [],
+              "preview": [
+                [
+                  {
+                    "cell": "A1",
+                    "text": "姓名"
+                  },
+                  {
+                    "cell": "B1",
+                    "text": "日期"
+                  },
+                  {
+                    "cell": "C1",
+                    "text": "班次"
+                  },
+                  {
+                    "cell": "D1",
+                    "text": "开始时间"
+                  },
+                  {
+                    "cell": "E1",
+                    "text": "结束时间"
+                  },
+                  {
+                    "cell": "F1",
+                    "text": "地点"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A2",
+                    "text": "星辰奕歌"
+                  },
+                  {
+                    "cell": "B2",
+                    "text": "2026-09-08"
+                  },
+                  {
+                    "cell": "C2",
+                    "text": "早班"
+                  },
+                  {
+                    "cell": "D2",
+                    "text": "08:00"
+                  },
+                  {
+                    "cell": "E2",
+                    "text": "16:00"
+                  },
+                  {
+                    "cell": "F2",
+                    "text": "一号站"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A3",
+                    "text": "星辰奕歌"
+                  },
+                  {
+                    "cell": "B3",
+                    "text": "2026-09-10"
+                  },
+                  {
+                    "cell": "C3",
+                    "text": "夜班"
+                  },
+                  {
+                    "cell": "D3",
+                    "text": "20:00"
+                  },
+                  {
+                    "cell": "E3",
+                    "text": "次日08:00"
+                  },
+                  {
+                    "cell": "F3",
+                    "text": "一号站"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A4",
+                    "text": "示例同事"
+                  },
+                  {
+                    "cell": "B4",
+                    "text": "2026-09-08"
+                  },
+                  {
+                    "cell": "C4",
+                    "text": "晚班"
+                  },
+                  {
+                    "cell": "D4",
+                    "text": "16:00"
+                  },
+                  {
+                    "cell": "E4",
+                    "text": "23:00"
+                  },
+                  {
+                    "cell": "F4",
+                    "text": "二号站"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    }
+  },
+  {
+    "file": "samples/培训通知.csv",
+    "report": {
+      "events": [
+        {
+          "date": "2026-09-09",
+          "title": "急救培训",
+          "shift": "",
+          "start": "09:00",
+          "end": "11:00",
+          "end_date": "2026-09-09",
+          "precision": "interval",
+          "location": "培训室",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "d2870bbf8398adafed31",
+              "filename": "培训通知.csv",
+              "sheet": "CSV",
+              "name_cell": "A2",
+              "evidence": {
+                "date": "B2",
+                "title": "C2",
+                "time": "D2",
+                "location": "E2"
+              },
+              "excerpt": "2026-09-09 | 急救培训 | 09:00-11:00 | 培训室",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "c5f289cbb246f2dc5b8e",
+          "reviews": []
+        },
+        {
+          "date": "2026-09-12",
+          "title": "资格考试",
+          "shift": "",
+          "start": "14:00",
+          "end": "16:00",
+          "end_date": "2026-09-12",
+          "precision": "interval",
+          "location": "教学楼201",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "d2870bbf8398adafed31",
+              "filename": "培训通知.csv",
+              "sheet": "CSV",
+              "name_cell": "A3",
+              "evidence": {
+                "date": "B3",
+                "title": "C3",
+                "time": "D3",
+                "location": "E3"
+              },
+              "excerpt": "2026-09-12 | 资格考试 | 14:00-16:00 | 教学楼201",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "6f4c6ce3c7b07849c353",
+          "reviews": []
+        }
+      ],
+      "pending": [],
+      "files": [
+        {
+          "file_id": "d2870bbf8398adafed31",
+          "filename": "培训通知.csv",
+          "status": "ok",
+          "sheets": [
+            {
+              "sheet": "CSV",
+              "status": "matched",
+              "name_matches": 2,
+              "events": 2,
+              "pending": 0,
+              "recognized_layout": true,
+              "hidden": false,
+              "warnings": [],
+              "preview": [
+                [
+                  {
+                    "cell": "A1",
+                    "text": "姓名"
+                  },
+                  {
+                    "cell": "B1",
+                    "text": "日期"
+                  },
+                  {
+                    "cell": "C1",
+                    "text": "事项"
+                  },
+                  {
+                    "cell": "D1",
+                    "text": "时间"
+                  },
+                  {
+                    "cell": "E1",
+                    "text": "地点"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A2",
+                    "text": "星辰奕歌"
+                  },
+                  {
+                    "cell": "B2",
+                    "text": "2026-09-09"
+                  },
+                  {
+                    "cell": "C2",
+                    "text": "急救培训"
+                  },
+                  {
+                    "cell": "D2",
+                    "text": "09:00-11:00"
+                  },
+                  {
+                    "cell": "E2",
+                    "text": "培训室"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A3",
+                    "text": "星辰奕歌"
+                  },
+                  {
+                    "cell": "B3",
+                    "text": "2026-09-12"
+                  },
+                  {
+                    "cell": "C3",
+                    "text": "资格考试"
+                  },
+                  {
+                    "cell": "D3",
+                    "text": "14:00-16:00"
+                  },
+                  {
+                    "cell": "E3",
+                    "text": "教学楼201"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A4",
+                    "text": "示例同事"
+                  },
+                  {
+                    "cell": "B4",
+                    "text": "2026-09-09"
+                  },
+                  {
+                    "cell": "C4",
+                    "text": "安全培训"
+                  },
+                  {
+                    "cell": "D4",
+                    "text": "13:00-15:00"
+                  },
+                  {
+                    "cell": "E4",
+                    "text": "培训室"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    }
+  },
+  {
+    "file": "tests/fixtures/9月排班表.xlsx",
+    "report": {
+      "events": [
+        {
+          "date": "2026-09-07",
+          "title": "早班",
+          "shift": "早班",
+          "start": "08:00",
+          "end": "16:00",
+          "end_date": "2026-09-07",
+          "precision": "interval",
+          "location": "",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "4f562a41bc4f62e9cfe5",
+              "filename": "9月排班表.xlsx",
+              "sheet": "九月",
+              "name_cell": "A3",
+              "evidence": {
+                "date": "B2",
+                "value": "B3",
+                "time": "A6（班次图例）"
+              },
+              "excerpt": "9月7日 | 早班",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "50fe0f8d1bf7b98de99e",
+          "reviews": []
+        },
+        {
+          "date": "2026-09-08",
+          "title": "休息",
+          "shift": "休息",
+          "start": null,
+          "end": null,
+          "end_date": null,
+          "precision": "date",
+          "location": "",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "4f562a41bc4f62e9cfe5",
+              "filename": "9月排班表.xlsx",
+              "sheet": "九月",
+              "name_cell": "A3",
+              "evidence": {
+                "date": "C2",
+                "value": "C3"
+              },
+              "excerpt": "9月8日 | 休息",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "8acf719078c44469c3de",
+          "reviews": []
+        }
+      ],
+      "pending": [],
+      "files": [
+        {
+          "file_id": "4f562a41bc4f62e9cfe5",
+          "filename": "9月排班表.xlsx",
+          "status": "ok",
+          "sheets": [
+            {
+              "sheet": "九月",
+              "status": "matched",
+              "name_matches": 1,
+              "events": 2,
+              "pending": 0,
+              "recognized_layout": true,
+              "hidden": false,
+              "warnings": [],
+              "preview": [
+                [
+                  {
+                    "cell": "A1",
+                    "text": "2026年9月排班表"
+                  },
+                  {
+                    "cell": "A1",
+                    "text": "2026年9月排班表"
+                  },
+                  {
+                    "cell": "A1",
+                    "text": "2026年9月排班表"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A2",
+                    "text": "姓名"
+                  },
+                  {
+                    "cell": "B2",
+                    "text": "9月7日"
+                  },
+                  {
+                    "cell": "C2",
+                    "text": "9月8日"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A3",
+                    "text": "星辰奕歌"
+                  },
+                  {
+                    "cell": "B3",
+                    "text": "早班"
+                  },
+                  {
+                    "cell": "C3",
+                    "text": "休息"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A4",
+                    "text": "林知夏"
+                  },
+                  {
+                    "cell": "B4",
+                    "text": "晚班"
+                  },
+                  {
+                    "cell": "C4",
+                    "text": "早班"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A5",
+                    "text": ""
+                  },
+                  {
+                    "cell": "B5",
+                    "text": ""
+                  },
+                  {
+                    "cell": "C5",
+                    "text": ""
+                  }
+                ],
+                [
+                  {
+                    "cell": "A6",
+                    "text": "早班:08:00–16:00"
+                  },
+                  {
+                    "cell": "B6",
+                    "text": ""
+                  },
+                  {
+                    "cell": "C6",
+                    "text": ""
+                  }
+                ],
+                [
+                  {
+                    "cell": "A7",
+                    "text": "晚班:16:00–23:00"
+                  },
+                  {
+                    "cell": "B7",
+                    "text": ""
+                  },
+                  {
+                    "cell": "C7",
+                    "text": ""
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    }
+  },
+  {
+    "file": "tests/fixtures/培训安排.xlsx",
+    "report": {
+      "events": [
+        {
+          "date": "2026-09-12",
+          "title": "消防培训",
+          "shift": "",
+          "start": "14:00",
+          "end": null,
+          "end_date": null,
+          "precision": "point",
+          "location": "一楼培训室",
+          "notes": [
+            "提前十分钟到场"
+          ],
+          "sources": [
+            {
+              "file_id": "394cd15a1b50d650a7ff",
+              "filename": "培训安排.xlsx",
+              "sheet": "消防",
+              "name_cell": "D2",
+              "evidence": {
+                "date": "A2",
+                "time": "B2",
+                "title": "C2",
+                "location": "E2",
+                "notes": "F2"
+              },
+              "excerpt": "2026年9月12日 | 下午2点 | 消防培训 | 一楼培训室 | 提前十分钟到场",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "58037a4ddb60a2fc185a",
+          "reviews": []
+        }
+      ],
+      "pending": [],
+      "files": [
+        {
+          "file_id": "394cd15a1b50d650a7ff",
+          "filename": "培训安排.xlsx",
+          "status": "ok",
+          "sheets": [
+            {
+              "sheet": "消防",
+              "status": "matched",
+              "name_matches": 1,
+              "events": 1,
+              "pending": 0,
+              "recognized_layout": true,
+              "hidden": false,
+              "warnings": [],
+              "preview": [
+                [
+                  {
+                    "cell": "A1",
+                    "text": "日期"
+                  },
+                  {
+                    "cell": "B1",
+                    "text": "时间"
+                  },
+                  {
+                    "cell": "C1",
+                    "text": "事项"
+                  },
+                  {
+                    "cell": "D1",
+                    "text": "参加人员"
+                  },
+                  {
+                    "cell": "E1",
+                    "text": "地点"
+                  },
+                  {
+                    "cell": "F1",
+                    "text": "备注"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A2",
+                    "text": "2026年9月12日"
+                  },
+                  {
+                    "cell": "B2",
+                    "text": "下午2点"
+                  },
+                  {
+                    "cell": "C2",
+                    "text": "消防培训"
+                  },
+                  {
+                    "cell": "D2",
+                    "text": "林知夏、星辰奕歌"
+                  },
+                  {
+                    "cell": "E2",
+                    "text": "一楼培训室"
+                  },
+                  {
+                    "cell": "F2",
+                    "text": "提前十分钟到场"
+                  }
+                ]
+              ]
+            },
+            {
+              "sheet": "其他培训",
+              "status": "no_match",
+              "name_matches": 0,
+              "events": 0,
+              "pending": 0,
+              "recognized_layout": true,
+              "hidden": false,
+              "warnings": [],
+              "preview": [
+                [
+                  {
+                    "cell": "A1",
+                    "text": "日期"
+                  },
+                  {
+                    "cell": "B1",
+                    "text": "事项"
+                  },
+                  {
+                    "cell": "C1",
+                    "text": "参加人员"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A2",
+                    "text": "2026年9月13日"
+                  },
+                  {
+                    "cell": "B2",
+                    "text": "设备培训"
+                  },
+                  {
+                    "cell": "C2",
+                    "text": "林知夏"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    }
+  },
+  {
+    "file": "tests/fixtures/国庆值班表.xlsx",
+    "report": {
+      "events": [
+        {
+          "date": "2026-10-02",
+          "title": "国庆值班",
+          "shift": "",
+          "start": null,
+          "end": null,
+          "end_date": null,
+          "precision": "date",
+          "location": "服务中心",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "71ef4f54963fde3d07ec",
+              "filename": "国庆值班表.xlsx",
+              "sheet": "国庆",
+              "name_cell": "C2",
+              "evidence": {
+                "date": "A2",
+                "title": "B2",
+                "location": "D2"
+              },
+              "excerpt": "2026年10月2日 | 国庆值班 | 服务中心",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "f36c3409b554f2f5075e",
+          "reviews": []
+        }
+      ],
+      "pending": [],
+      "files": [
+        {
+          "file_id": "71ef4f54963fde3d07ec",
+          "filename": "国庆值班表.xlsx",
+          "status": "ok",
+          "sheets": [
+            {
+              "sheet": "国庆",
+              "status": "matched",
+              "name_matches": 1,
+              "events": 1,
+              "pending": 0,
+              "recognized_layout": true,
+              "hidden": false,
+              "warnings": [],
+              "preview": [
+                [
+                  {
+                    "cell": "A1",
+                    "text": "日期"
+                  },
+                  {
+                    "cell": "B1",
+                    "text": "事项"
+                  },
+                  {
+                    "cell": "C1",
+                    "text": "值班人员"
+                  },
+                  {
+                    "cell": "D1",
+                    "text": "地点"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A2",
+                    "text": "2026年10月2日"
+                  },
+                  {
+                    "cell": "B2",
+                    "text": "国庆值班"
+                  },
+                  {
+                    "cell": "C2",
+                    "text": "星辰奕歌"
+                  },
+                  {
+                    "cell": "D2",
+                    "text": "服务中心"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    }
+  },
+  {
+    "file": "tests/fixtures/冲突与重复.xlsx",
+    "report": {
+      "events": [
+        {
+          "date": "2026-09-07",
+          "title": "早班",
+          "shift": "早班",
+          "start": "08:00",
+          "end": "16:00",
+          "end_date": "2026-09-07",
+          "precision": "interval",
+          "location": "",
+          "notes": [
+            "与九月排班重复"
+          ],
+          "sources": [
+            {
+              "file_id": "c37d11c760b5f071ff76",
+              "filename": "冲突与重复.xlsx",
+              "sheet": "核对",
+              "name_cell": "E2",
+              "evidence": {
+                "date": "A2",
+                "time": "B2",
+                "shift": "C2",
+                "title": "D2",
+                "notes": "F2"
+              },
+              "excerpt": "2026-09-07 | 08:00-16:00 | 早班 | 与九月排班重复",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "50fe0f8d1bf7b98de99e",
+          "reviews": []
+        },
+        {
+          "date": "2026-09-07",
+          "title": "应急演练",
+          "shift": "",
+          "start": "15:00",
+          "end": "17:00",
+          "end_date": "2026-09-07",
+          "precision": "interval",
+          "location": "",
+          "notes": [
+            "与早班冲突"
+          ],
+          "sources": [
+            {
+              "file_id": "c37d11c760b5f071ff76",
+              "filename": "冲突与重复.xlsx",
+              "sheet": "核对",
+              "name_cell": "E3",
+              "evidence": {
+                "date": "A3",
+                "time": "B3",
+                "shift": "C3",
+                "title": "D3",
+                "notes": "F3"
+              },
+              "excerpt": "2026-09-07 | 15:00-17:00 | 应急演练 | 与早班冲突",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "864acdd21baff3340d69",
+          "reviews": []
+        }
+      ],
+      "pending": [],
+      "files": [
+        {
+          "file_id": "c37d11c760b5f071ff76",
+          "filename": "冲突与重复.xlsx",
+          "status": "ok",
+          "sheets": [
+            {
+              "sheet": "核对",
+              "status": "matched",
+              "name_matches": 2,
+              "events": 2,
+              "pending": 0,
+              "recognized_layout": true,
+              "hidden": false,
+              "warnings": [],
+              "preview": [
+                [
+                  {
+                    "cell": "A1",
+                    "text": "日期"
+                  },
+                  {
+                    "cell": "B1",
+                    "text": "时间"
+                  },
+                  {
+                    "cell": "C1",
+                    "text": "班次"
+                  },
+                  {
+                    "cell": "D1",
+                    "text": "事项"
+                  },
+                  {
+                    "cell": "E1",
+                    "text": "姓名"
+                  },
+                  {
+                    "cell": "F1",
+                    "text": "备注"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A2",
+                    "text": "2026-09-07"
+                  },
+                  {
+                    "cell": "B2",
+                    "text": "08:00-16:00"
+                  },
+                  {
+                    "cell": "C2",
+                    "text": "早班"
+                  },
+                  {
+                    "cell": "D2",
+                    "text": "早班"
+                  },
+                  {
+                    "cell": "E2",
+                    "text": "星辰奕歌"
+                  },
+                  {
+                    "cell": "F2",
+                    "text": "与九月排班重复"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A3",
+                    "text": "2026-09-07"
+                  },
+                  {
+                    "cell": "B3",
+                    "text": "15:00-17:00"
+                  },
+                  {
+                    "cell": "C3",
+                    "text": ""
+                  },
+                  {
+                    "cell": "D3",
+                    "text": "应急演练"
+                  },
+                  {
+                    "cell": "E3",
+                    "text": "星辰奕歌"
+                  },
+                  {
+                    "cell": "F3",
+                    "text": "与早班冲突"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "warnings": [],
+      "conflicts": [
+        {
+          "event_ids": [
+            "50fe0f8d1bf7b98de99e",
+            "864acdd21baff3340d69"
+          ],
+          "kind": "definite",
+          "message": "时间冲突"
+        }
+      ]
+    }
+  },
+  {
+    "file": "tests/fixtures/纵向排班.xls",
+    "report": {
+      "events": [
+        {
+          "date": "2026-09-09",
+          "title": "夜班",
+          "shift": "夜班",
+          "start": "22:00",
+          "end": "06:00",
+          "end_date": "2026-09-10",
+          "precision": "interval",
+          "location": "",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "1e80a6c9ec4738986290",
+              "filename": "纵向排班.xls",
+              "sheet": "值班",
+              "name_cell": "B2",
+              "evidence": {
+                "date": "A3",
+                "value": "B3"
+              },
+              "excerpt": "2026-09-09 00:00:00 | 夜班 22:00-次日06:00",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "b4dd171932507be637a3",
+          "reviews": []
+        },
+        {
+          "date": "2026-09-10",
+          "title": "休息",
+          "shift": "休息",
+          "start": null,
+          "end": null,
+          "end_date": null,
+          "precision": "date",
+          "location": "",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "1e80a6c9ec4738986290",
+              "filename": "纵向排班.xls",
+              "sheet": "值班",
+              "name_cell": "B2",
+              "evidence": {
+                "date": "A4",
+                "value": "B4"
+              },
+              "excerpt": "2026-09-10 00:00:00 | 休息",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "19af2ccfc4aa88266737",
+          "reviews": []
+        }
+      ],
+      "pending": [],
+      "files": [
+        {
+          "file_id": "1e80a6c9ec4738986290",
+          "filename": "纵向排班.xls",
+          "status": "ok",
+          "sheets": [
+            {
+              "sheet": "值班",
+              "status": "matched",
+              "name_matches": 1,
+              "events": 2,
+              "pending": 0,
+              "recognized_layout": true,
+              "hidden": false,
+              "warnings": [],
+              "preview": [
+                [
+                  {
+                    "cell": "A1",
+                    "text": "2026年9月值班表"
+                  },
+                  {
+                    "cell": "A1",
+                    "text": "2026年9月值班表"
+                  },
+                  {
+                    "cell": "A1",
+                    "text": "2026年9月值班表"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A2",
+                    "text": "日期"
+                  },
+                  {
+                    "cell": "B2",
+                    "text": "星辰奕歌"
+                  },
+                  {
+                    "cell": "C2",
+                    "text": "林知夏"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A3",
+                    "text": "2026-09-09 00:00:00"
+                  },
+                  {
+                    "cell": "B3",
+                    "text": "夜班 22:00-次日06:00"
+                  },
+                  {
+                    "cell": "C3",
+                    "text": "早班"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A4",
+                    "text": "2026-09-10 00:00:00"
+                  },
+                  {
+                    "cell": "B4",
+                    "text": "休息"
+                  },
+                  {
+                    "cell": "C4",
+                    "text": "早班"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    }
+  },
+  {
+    "file": "tests/fixtures/考试安排.csv",
+    "report": {
+      "events": [
+        {
+          "date": "2026-09-15",
+          "title": "计算机基础",
+          "shift": "",
+          "start": "09:00",
+          "end": "11:00",
+          "end_date": "2026-09-15",
+          "precision": "interval",
+          "location": "301",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "761ee74d854874569761",
+              "filename": "考试安排.csv",
+              "sheet": "CSV",
+              "name_cell": "E2",
+              "evidence": {
+                "date": "A2",
+                "start": "B2",
+                "end": "C2",
+                "title": "D2",
+                "location": "F2"
+              },
+              "excerpt": "2026年9月15日 | 09:00 | 11:00 | 计算机基础 | 301",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "b43e7134b27359db1a3d",
+          "reviews": []
+        }
+      ],
+      "pending": [],
+      "files": [
+        {
+          "file_id": "761ee74d854874569761",
+          "filename": "考试安排.csv",
+          "status": "ok",
+          "sheets": [
+            {
+              "sheet": "CSV",
+              "status": "matched",
+              "name_matches": 1,
+              "events": 1,
+              "pending": 0,
+              "recognized_layout": true,
+              "hidden": false,
+              "warnings": [],
+              "preview": [
+                [
+                  {
+                    "cell": "A1",
+                    "text": "日期"
+                  },
+                  {
+                    "cell": "B1",
+                    "text": "开始时间"
+                  },
+                  {
+                    "cell": "C1",
+                    "text": "结束时间"
+                  },
+                  {
+                    "cell": "D1",
+                    "text": "考试科目"
+                  },
+                  {
+                    "cell": "E1",
+                    "text": "监考人员"
+                  },
+                  {
+                    "cell": "F1",
+                    "text": "考场"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A2",
+                    "text": "2026年9月15日"
+                  },
+                  {
+                    "cell": "B2",
+                    "text": "09:00"
+                  },
+                  {
+                    "cell": "C2",
+                    "text": "11:00"
+                  },
+                  {
+                    "cell": "D2",
+                    "text": "计算机基础"
+                  },
+                  {
+                    "cell": "E2",
+                    "text": "星辰奕歌"
+                  },
+                  {
+                    "cell": "F2",
+                    "text": "301"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    }
+  },
+  {
+    "file": "tests/fixtures/合并表头.xlsx",
+    "report": {
+      "events": [
+        {
+          "date": "2026-09-07",
+          "title": "早班",
+          "shift": "早班",
+          "start": null,
+          "end": null,
+          "end_date": null,
+          "precision": "date",
+          "location": "",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "855a440d129ce7b80eed",
+              "filename": "合并表头.xlsx",
+              "sheet": "2026年9月",
+              "name_cell": "B3",
+              "evidence": {
+                "date": "B1",
+                "shift": "B2"
+              },
+              "excerpt": "9月7日 | 早班",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "87b314b6f5258edf8269",
+          "reviews": []
+        },
+        {
+          "date": "2026-09-08",
+          "title": "晚班",
+          "shift": "晚班",
+          "start": null,
+          "end": null,
+          "end_date": null,
+          "precision": "date",
+          "location": "",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "855a440d129ce7b80eed",
+              "filename": "合并表头.xlsx",
+              "sheet": "2026年9月",
+              "name_cell": "E3",
+              "evidence": {
+                "date": "D1",
+                "shift": "E2"
+              },
+              "excerpt": "9月8日 | 晚班",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "1426949893781beb3f99",
+          "reviews": []
+        }
+      ],
+      "pending": [],
+      "files": [
+        {
+          "file_id": "855a440d129ce7b80eed",
+          "filename": "合并表头.xlsx",
+          "status": "ok",
+          "sheets": [
+            {
+              "sheet": "2026年9月",
+              "status": "matched",
+              "name_matches": 2,
+              "events": 2,
+              "pending": 0,
+              "recognized_layout": true,
+              "hidden": false,
+              "warnings": [],
+              "preview": [
+                [
+                  {
+                    "cell": "A1",
+                    "text": "日期"
+                  },
+                  {
+                    "cell": "B1",
+                    "text": "9月7日"
+                  },
+                  {
+                    "cell": "B1",
+                    "text": "9月7日"
+                  },
+                  {
+                    "cell": "D1",
+                    "text": "9月8日"
+                  },
+                  {
+                    "cell": "D1",
+                    "text": "9月8日"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A2",
+                    "text": "班次"
+                  },
+                  {
+                    "cell": "B2",
+                    "text": "早班"
+                  },
+                  {
+                    "cell": "C2",
+                    "text": "晚班"
+                  },
+                  {
+                    "cell": "D2",
+                    "text": "早班"
+                  },
+                  {
+                    "cell": "E2",
+                    "text": "晚班"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A3",
+                    "text": "人员"
+                  },
+                  {
+                    "cell": "B3",
+                    "text": "星辰奕歌、林知夏"
+                  },
+                  {
+                    "cell": "C3",
+                    "text": "陈清和"
+                  },
+                  {
+                    "cell": "D3",
+                    "text": "林知夏"
+                  },
+                  {
+                    "cell": "E3",
+                    "text": "星辰奕歌"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    }
+  },
+  {
+    "file": "tests/fixtures/周期课表待确认.xlsx",
+    "report": {
+      "events": [],
+      "pending": [
+        {
+          "date": null,
+          "title": "数学",
+          "shift": "",
+          "start": null,
+          "end": null,
+          "end_date": null,
+          "precision": "date",
+          "location": "",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "59056cfb31973487ebda",
+              "filename": "周期课表待确认.xlsx",
+              "sheet": "课表",
+              "name_cell": "D2",
+              "evidence": {
+                "title": "C2"
+              },
+              "excerpt": "数学",
+              "hidden": false
+            }
+          ],
+          "warnings": [
+            "无法确定具体日期，请核对源表；周期课表需补充学期和节次信息"
+          ],
+          "status": "pending",
+          "id": "0861d45452c2e8c8d4e5",
+          "reviews": []
+        }
+      ],
+      "files": [
+        {
+          "file_id": "59056cfb31973487ebda",
+          "filename": "周期课表待确认.xlsx",
+          "status": "ok",
+          "sheets": [
+            {
+              "sheet": "课表",
+              "status": "matched",
+              "name_matches": 1,
+              "events": 0,
+              "pending": 1,
+              "recognized_layout": true,
+              "hidden": false,
+              "warnings": [],
+              "preview": [
+                [
+                  {
+                    "cell": "A1",
+                    "text": "星期"
+                  },
+                  {
+                    "cell": "B1",
+                    "text": "节次"
+                  },
+                  {
+                    "cell": "C1",
+                    "text": "课程"
+                  },
+                  {
+                    "cell": "D1",
+                    "text": "教师"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A2",
+                    "text": "星期一"
+                  },
+                  {
+                    "cell": "B2",
+                    "text": "第1–2节"
+                  },
+                  {
+                    "cell": "C2",
+                    "text": "数学"
+                  },
+                  {
+                    "cell": "D2",
+                    "text": "星辰奕歌"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    }
+  },
+  {
+    "file": "tests/fixtures/accuracy/annotated-headers.csv",
+    "report": {
+      "events": [
+        {
+          "date": "2026-09-08",
+          "title": "消防培训",
+          "shift": "",
+          "start": "08:00",
+          "end": "10:00",
+          "end_date": "2026-09-08",
+          "precision": "interval",
+          "location": "",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "2fa6a96b98c742ff5a66",
+              "filename": "annotated-headers.csv",
+              "sheet": "CSV",
+              "name_cell": "B2",
+              "evidence": {
+                "date": "A2",
+                "time": "C2",
+                "title": "D2"
+              },
+              "excerpt": "2026-09-08 | 08:00-10:00 | 消防培训",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "31f357f1773a8e47ef35",
+          "reviews": []
+        }
+      ],
+      "pending": [],
+      "files": [
+        {
+          "file_id": "2fa6a96b98c742ff5a66",
+          "filename": "annotated-headers.csv",
+          "status": "ok",
+          "sheets": [
+            {
+              "sheet": "CSV",
+              "status": "matched",
+              "name_matches": 1,
+              "events": 1,
+              "pending": 0,
+              "recognized_layout": true,
+              "hidden": false,
+              "warnings": [],
+              "preview": [
+                [
+                  {
+                    "cell": "A1",
+                    "text": "日期(YYYY-MM-DD)"
+                  },
+                  {
+                    "cell": "B1",
+                    "text": "参加人员(完整姓名)"
+                  },
+                  {
+                    "cell": "C1",
+                    "text": "起止时间(24小时制)"
+                  },
+                  {
+                    "cell": "D1",
+                    "text": "事项"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A2",
+                    "text": "2026-09-08"
+                  },
+                  {
+                    "cell": "B2",
+                    "text": "星辰奕歌"
+                  },
+                  {
+                    "cell": "C2",
+                    "text": "08:00-10:00"
+                  },
+                  {
+                    "cell": "D2",
+                    "text": "消防培训"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A3",
+                    "text": "2026-09-09"
+                  },
+                  {
+                    "cell": "B3",
+                    "text": "星辰奕歌甲"
+                  },
+                  {
+                    "cell": "C3",
+                    "text": "08:00-10:00"
+                  },
+                  {
+                    "cell": "D3",
+                    "text": "消防培训"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    }
+  },
+  {
+    "file": "tests/fixtures/accuracy/names-in-rows.csv",
+    "report": {
+      "events": [
+        {
+          "date": "2026-09-08",
+          "title": "早班",
+          "shift": "早班",
+          "start": "08:00",
+          "end": "16:00",
+          "end_date": "2026-09-08",
+          "precision": "interval",
+          "location": "",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "5aba3aebb4b44cb47e4f",
+              "filename": "names-in-rows.csv",
+              "sheet": "CSV",
+              "name_cell": "A2",
+              "evidence": {
+                "date": "B1",
+                "value": "B2"
+              },
+              "excerpt": "2026-09-08 | 早班 08:00-16:00",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "4556ed598a310cc724ea",
+          "reviews": []
+        },
+        {
+          "date": "2026-09-09",
+          "title": "夜班",
+          "shift": "夜班",
+          "start": "22:00",
+          "end": "06:00",
+          "end_date": "2026-09-10",
+          "precision": "interval",
+          "location": "",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "5aba3aebb4b44cb47e4f",
+              "filename": "names-in-rows.csv",
+              "sheet": "CSV",
+              "name_cell": "A2",
+              "evidence": {
+                "date": "C1",
+                "value": "C2"
+              },
+              "excerpt": "2026-09-09 | 夜班 22:00-次日06:00",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "b4dd171932507be637a3",
+          "reviews": []
+        }
+      ],
+      "pending": [],
+      "files": [
+        {
+          "file_id": "5aba3aebb4b44cb47e4f",
+          "filename": "names-in-rows.csv",
+          "status": "ok",
+          "sheets": [
+            {
+              "sheet": "CSV",
+              "status": "matched",
+              "name_matches": 1,
+              "events": 2,
+              "pending": 0,
+              "recognized_layout": true,
+              "hidden": false,
+              "warnings": [],
+              "preview": [
+                [
+                  {
+                    "cell": "A1",
+                    "text": "姓名"
+                  },
+                  {
+                    "cell": "B1",
+                    "text": "2026-09-08"
+                  },
+                  {
+                    "cell": "C1",
+                    "text": "2026-09-09"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A2",
+                    "text": "星辰奕歌"
+                  },
+                  {
+                    "cell": "B2",
+                    "text": "早班 08:00-16:00"
+                  },
+                  {
+                    "cell": "C2",
+                    "text": "夜班 22:00-次日06:00"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A3",
+                    "text": "星辰奕歌甲"
+                  },
+                  {
+                    "cell": "B3",
+                    "text": "夜班"
+                  },
+                  {
+                    "cell": "C3",
+                    "text": "早班"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    }
+  },
+  {
+    "file": "tests/fixtures/accuracy/names-in-columns.csv",
+    "report": {
+      "events": [
+        {
+          "date": "2026-09-08",
+          "title": "早班",
+          "shift": "早班",
+          "start": "08:00",
+          "end": "16:00",
+          "end_date": "2026-09-08",
+          "precision": "interval",
+          "location": "",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "349c001b2129966fd95e",
+              "filename": "names-in-columns.csv",
+              "sheet": "CSV",
+              "name_cell": "B1",
+              "evidence": {
+                "date": "A2",
+                "value": "B2"
+              },
+              "excerpt": "2026-09-08 | 早班 08:00-16:00",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "4556ed598a310cc724ea",
+          "reviews": []
+        },
+        {
+          "date": "2026-09-09",
+          "title": "休息",
+          "shift": "休息",
+          "start": null,
+          "end": null,
+          "end_date": null,
+          "precision": "date",
+          "location": "",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "349c001b2129966fd95e",
+              "filename": "names-in-columns.csv",
+              "sheet": "CSV",
+              "name_cell": "B1",
+              "evidence": {
+                "date": "A3",
+                "value": "B3"
+              },
+              "excerpt": "2026-09-09 | 休息",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "c24109092a7ad0d288f9",
+          "reviews": []
+        }
+      ],
+      "pending": [],
+      "files": [
+        {
+          "file_id": "349c001b2129966fd95e",
+          "filename": "names-in-columns.csv",
+          "status": "ok",
+          "sheets": [
+            {
+              "sheet": "CSV",
+              "status": "matched",
+              "name_matches": 1,
+              "events": 2,
+              "pending": 0,
+              "recognized_layout": true,
+              "hidden": false,
+              "warnings": [],
+              "preview": [
+                [
+                  {
+                    "cell": "A1",
+                    "text": "日期"
+                  },
+                  {
+                    "cell": "B1",
+                    "text": "星辰奕歌"
+                  },
+                  {
+                    "cell": "C1",
+                    "text": "星辰奕歌甲"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A2",
+                    "text": "2026-09-08"
+                  },
+                  {
+                    "cell": "B2",
+                    "text": "早班 08:00-16:00"
+                  },
+                  {
+                    "cell": "C2",
+                    "text": "夜班"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A3",
+                    "text": "2026-09-09"
+                  },
+                  {
+                    "cell": "B3",
+                    "text": "休息"
+                  },
+                  {
+                    "cell": "C3",
+                    "text": "早班"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    }
+  },
+  {
+    "file": "tests/fixtures/accuracy/repeated-records.csv",
+    "report": {
+      "events": [
+        {
+          "date": "2026-09-08",
+          "title": "考试",
+          "shift": "",
+          "start": "09:00",
+          "end": "11:00",
+          "end_date": "2026-09-08",
+          "precision": "interval",
+          "location": "",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "26ec75a29fb43b4057e2",
+              "filename": "repeated-records.csv",
+              "sheet": "CSV",
+              "name_cell": "B2",
+              "evidence": {
+                "date": "A2",
+                "title": "C2",
+                "time": "D2"
+              },
+              "excerpt": "2026-09-08 | 考试 | 09:00-11:00",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "f5699951051b37fd7328",
+          "reviews": []
+        },
+        {
+          "date": "2026-09-09",
+          "title": "考试",
+          "shift": "",
+          "start": "14:00",
+          "end": "16:00",
+          "end_date": "2026-09-09",
+          "precision": "interval",
+          "location": "",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "26ec75a29fb43b4057e2",
+              "filename": "repeated-records.csv",
+              "sheet": "CSV",
+              "name_cell": "B5",
+              "evidence": {
+                "date": "A5",
+                "title": "C5",
+                "time": "D5"
+              },
+              "excerpt": "2026-09-09 | 考试 | 14:00-16:00",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "62c692292dc7363e5a28",
+          "reviews": []
+        }
+      ],
+      "pending": [],
+      "files": [
+        {
+          "file_id": "26ec75a29fb43b4057e2",
+          "filename": "repeated-records.csv",
+          "status": "ok",
+          "sheets": [
+            {
+              "sheet": "CSV",
+              "status": "matched",
+              "name_matches": 2,
+              "events": 2,
+              "pending": 0,
+              "recognized_layout": true,
+              "hidden": false,
+              "warnings": [],
+              "preview": [
+                [
+                  {
+                    "cell": "A1",
+                    "text": "日期"
+                  },
+                  {
+                    "cell": "B1",
+                    "text": "姓名"
+                  },
+                  {
+                    "cell": "C1",
+                    "text": "事项"
+                  },
+                  {
+                    "cell": "D1",
+                    "text": "时间"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A2",
+                    "text": "2026-09-08"
+                  },
+                  {
+                    "cell": "B2",
+                    "text": "星辰奕歌"
+                  },
+                  {
+                    "cell": "C2",
+                    "text": "考试"
+                  },
+                  {
+                    "cell": "D2",
+                    "text": "09:00-11:00"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A3",
+                    "text": ""
+                  },
+                  {
+                    "cell": "B3",
+                    "text": ""
+                  },
+                  {
+                    "cell": "C3",
+                    "text": ""
+                  },
+                  {
+                    "cell": "D3",
+                    "text": ""
+                  }
+                ],
+                [
+                  {
+                    "cell": "A4",
+                    "text": "日期"
+                  },
+                  {
+                    "cell": "B4",
+                    "text": "姓名"
+                  },
+                  {
+                    "cell": "C4",
+                    "text": "事项"
+                  },
+                  {
+                    "cell": "D4",
+                    "text": "时间"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A5",
+                    "text": "2026-09-09"
+                  },
+                  {
+                    "cell": "B5",
+                    "text": "星辰奕歌"
+                  },
+                  {
+                    "cell": "C5",
+                    "text": "考试"
+                  },
+                  {
+                    "cell": "D5",
+                    "text": "14:00-16:00"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    }
+  },
+  {
+    "file": "tests/fixtures/accuracy/start-only-course.csv",
+    "report": {
+      "events": [
+        {
+          "date": "2026-09-08",
+          "title": "数学",
+          "shift": "",
+          "start": "08:00",
+          "end": null,
+          "end_date": null,
+          "precision": "point",
+          "location": "301",
+          "notes": [],
+          "sources": [
+            {
+              "file_id": "e706a08805c4b09d6bee",
+              "filename": "start-only-course.csv",
+              "sheet": "CSV",
+              "name_cell": "C2",
+              "evidence": {
+                "date": "A2",
+                "title": "B2",
+                "start": "D2",
+                "location": "E2"
+              },
+              "excerpt": "2026-09-08 | 数学 | 08:00 | 301",
+              "hidden": false
+            }
+          ],
+          "warnings": [],
+          "status": "confirmed",
+          "id": "24f77eff45bed590a638",
+          "reviews": []
+        }
+      ],
+      "pending": [],
+      "files": [
+        {
+          "file_id": "e706a08805c4b09d6bee",
+          "filename": "start-only-course.csv",
+          "status": "ok",
+          "sheets": [
+            {
+              "sheet": "CSV",
+              "status": "matched",
+              "name_matches": 1,
+              "events": 1,
+              "pending": 0,
+              "recognized_layout": true,
+              "hidden": false,
+              "warnings": [],
+              "preview": [
+                [
+                  {
+                    "cell": "A1",
+                    "text": "上课日期"
+                  },
+                  {
+                    "cell": "B1",
+                    "text": "课程"
+                  },
+                  {
+                    "cell": "C1",
+                    "text": "教师"
+                  },
+                  {
+                    "cell": "D1",
+                    "text": "开始时间"
+                  },
+                  {
+                    "cell": "E1",
+                    "text": "教室"
+                  }
+                ],
+                [
+                  {
+                    "cell": "A2",
+                    "text": "2026-09-08"
+                  },
+                  {
+                    "cell": "B2",
+                    "text": "数学"
+                  },
+                  {
+                    "cell": "C2",
+                    "text": "星辰奕歌"
+                  },
+                  {
+                    "cell": "D2",
+                    "text": "08:00"
+                  },
+                  {
+                    "cell": "E2",
+                    "text": "301"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "warnings": [],
+      "conflicts": []
+    }
+  }
+]

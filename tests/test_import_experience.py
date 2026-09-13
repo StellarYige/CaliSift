@@ -1,3 +1,4 @@
+from tests.test_browser_application import write_download
 """Synthetic regression cases, not real anonymized schedules or acceptance data."""
 
 from datetime import datetime
@@ -10,7 +11,7 @@ from scripts.generate_fixtures import NAME, csv_bytes, xlsx_bytes
 from xingcheng.aggregate import merge_reports
 from xingcheng.parsing import parse_file
 from xingcheng.temporal import Context, parse_date, parse_time
-from tests.test_desktop_store import local, draft, change
+from tests.test_browser_application import local, draft, change
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -298,7 +299,7 @@ def test_preview_includes_conflicts_with_saved_events_and_both_sources(local):
 
 
 def test_same_named_staged_files_expose_their_distinct_source_identity(local, tmp_path):
-    from tests.test_desktop_jobs import finish
+    from tests.test_browser_application import finish, input_files
 
     app, wid = local
     paths = []
@@ -315,7 +316,7 @@ def test_same_named_staged_files_expose_their_distinct_source_identity(local, tm
             )
         )
         paths.append(str(path))
-    job = app.jobs.stage(wid, paths)
+    job = app.jobs.stage(wid, input_files(paths))
     app.jobs.start(job["id"], 2026)
     ready = finish(app, job["id"])
     assert ready["status"] == "review"
@@ -340,7 +341,7 @@ def test_cross_year_import_review_save_and_ics_snapshot(local, tmp_path):
     preview = app.export_preview(wid, {"alarm": 15})
     assert preview["count"] == 1 and len(preview["excluded"]) == 1
     target = tmp_path / "snapshot.ics"
-    app.export_file(wid, preview["version"], {"alarm": 15}, str(target))
+    write_download(app, wid, preview["version"], {"alarm": 15}, str(target))
     original = target.read_bytes()
     text = original.decode("utf-8")
     assert "DTSTART;TZID=Asia/Shanghai:20261231T080000" in text

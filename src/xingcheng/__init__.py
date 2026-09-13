@@ -1,3 +1,1 @@
-"""Personal calendar and deterministic extraction with optional local OCR inference."""
-
-__version__ = "0.3.0a2"
+__version__ = "0.4.0-alpha.1"

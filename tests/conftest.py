@@ -1,13 +1,1 @@
-import os
-import pytest
-
-
-def pytest_sessionstart(session):
-    if os.environ.get("CALISIFT_REQUIRE_OCR") == "1":
-        from xingcheng.ocr import readiness
-
-        state = readiness()
-        if not state["ready"]:
-            raise pytest.UsageError(
-                "Real OCR is required for release checks: " + state["message"]
-            )
+# Real model inference is required by web/e2e, with no skipped OCR fallback.

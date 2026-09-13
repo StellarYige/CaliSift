@@ -1,8 +1,6 @@
 from copy import deepcopy
 from datetime import date
 import pytest
-from fastapi.testclient import TestClient
-from xingcheng.api import app
 from xingcheng.calendar import (
     empty_calendar,
     transform,
@@ -259,25 +257,11 @@ def test_ics_unicode_folding_escaping_point_all_day_and_stable_uid():
     assert "DTEND;VALUE=DATE:20260908" in export_ics(day, {})
 
 
-def test_real_http_calendar_transform_export_and_validation():
-    client = TestClient(app)
-    c = saved()
-    r = client.post(
-        "/api/calendar/transform",
-        json=dict(
-            calendar=c,
-            expected_version=c["version"],
-            operation=dict(type="hide", event_id="missing"),
-        ),
-    )
-    assert r.status_code == 422
-    r = client.post(
-        "/api/calendar/export", json=dict(calendar=c, options={"alarm": 30})
-    )
-    assert r.status_code == 200 and r.headers["content-type"].startswith(
-        "text/calendar"
-    )
-    assert "BEGIN:VALARM" in r.text
+def test_domain_transform_export_and_validation():
+    c=saved()
+    with pytest.raises(ValueError):
+        transform(c,c["version"],dict(type="hide",event_id="missing"))
+    assert "BEGIN:VALARM" in export_ics(c,{"alarm":30})
 
 
 def test_rule_changes_split_shared_events_without_changing_other_source():

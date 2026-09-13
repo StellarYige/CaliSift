@@ -1,6 +1,7 @@
+from tests.test_browser_application import write_download
 import json
 from pathlib import Path
-from tests.test_desktop_store import local
+from tests.test_browser_application import local
 
 
 def test_windows_fixture_restores_with_same_uid_sequence_and_preferences_on_each_os(
@@ -17,7 +18,7 @@ def test_windows_fixture_restores_with_same_uid_sequence_and_preferences_on_each
     assert restored["preferences"]["values"]["theme"] == "dark"
     assert restored["preferences"]["values"]["font_size"] == 20
     output = tmp_path / "restored.ics"
-    app.export_file(wid, restored["version"], {"alarm": expected["alarm"]}, output)
+    write_download(app, wid, restored["version"], {"alarm": expected["alarm"]}, output)
     text = output.read_text(encoding="utf-8")
     assert "UID:" + expected["event_id"] + "@xingcheng.local" in text
     assert "SEQUENCE:1" in text and "TRIGGER:-PT15M" in text

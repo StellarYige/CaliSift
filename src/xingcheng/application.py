@@ -1,13 +1,12 @@
-"""Local application commands, shared by the desktop bridge and CLI."""
+"""Browser application commands. Persistence is committed by IndexedDB after each command."""
 
+import base64
 from copy import deepcopy
 from datetime import date
 import hashlib
 import json
-from pathlib import Path
 import re
 from types import SimpleNamespace
-
 from . import __version__
 from .aggregate import detect_conflicts
 from .backup import pack_backup, unpack_backup
@@ -22,38 +21,137 @@ from .calendar import (
     validate_calendar,
 )
 from .jobs import JobManager, IMAGES
-from .instance import InstanceLock
-from .localstore import LocalError, LocalStore, atomic_write, digest, encode
+from .localstore import LocalError, LocalStore, digest, encode
 from .rules import expand_course, validate_rules
 
 
 class Application:
-    def __init__(self, root):
-        self.instance = InstanceLock(root)
-        try:
-            self.store = LocalStore(root)
-            self.jobs = JobManager(self.store)
-        except Exception:
-            self.instance.close()
-            raise
-        self.restore_tokens = {}
-        self._views = {}
+    def __init__(self, state=None):
+        self.store = LocalStore(state)
+        self.jobs = JobManager(self.store)
+        self.restore_tokens = self.store.state["restore_tokens"]
 
     def capabilities(self):
-        from .ocr import readiness
-
         return dict(
             name="CaliSift · 星程",
             version=__version__,
-            ocr=readiness(),
             timezone="Asia/Shanghai",
-            workspaces=self.store.workspaces(),
-            data_path=str(self.store.root),
-            device=self.store.device_preferences(),
-            limits=dict(
-                files=10, images=5, file_mib=10, batch_mib=30, pixels=12_000_000
+            ocr=dict(
+                ready=True,
+                model="PP-OCRv5 mobile · ONNX Runtime Web 1.23.2",
+                message="首次使用会加载本站资源",
             ),
+            workspaces=self.store.workspaces(),
+            device=self.store.device_preferences(),
+            limits=dict(files=10, images=5, file_mib=10, batch_mib=30, pixels=12000000),
         )
+
+    def _event_view(self, workspace_id):
+        calendar = self.store.workspace(workspace_id)["calendar"]
+        values = [(r, effective(r)) for r in calendar["events"]]
+        visible = [
+            SimpleNamespace(**v)
+            for r, v in values
+            if not r["hidden"]
+            and not r.get("cancelled")
+            and not r.get("archived")
+            and v["status"] == "confirmed"
+        ]
+        return dict(
+            calendar=calendar, values=values, conflicts=detect_conflicts(visible)
+        )
+
+    def image_preview(self, job_id, file_id):
+        from PIL import Image, ImageOps
+        import io
+
+        job, file = self.job_file(job_id, file_id)
+        with Image.open(io.BytesIO(self.jobs.file_data(file))) as original:
+            picture = ImageOps.exif_transpose(original).convert("RGB")
+            picture.thumbnail((1800, 1800))
+            stream = io.BytesIO()
+            picture.save(stream, format="JPEG", quality=88)
+        return "data:image/jpeg;base64," + base64.b64encode(stream.getvalue()).decode(
+            "ascii"
+        )
+
+    def commit_change(self, preview_id, expected_version):
+        result = self.store.commit(preview_id, expected_version)
+        if result.get("job_id"):
+            self.jobs.clean(result["job_id"])
+        self.store.collect_evidence()
+        return {
+            **result,
+            "warning": "",
+            "workspace": self.workspace(result["workspace_id"]),
+        }
+
+    def restore_backup(self, token, replace_workspace_id=None, expected_version=None):
+        from .preferences import Preferences, from_legacy
+
+        if token not in self.restore_tokens:
+            raise LocalError("VERSION_CONFLICT", "恢复预览已失效，请重新选择备份")
+        payload = deepcopy(self.restore_tokens[token])
+        calendar = payload["calendar"]
+        prefs = Preferences.model_validate(
+            payload.get("preferences", from_legacy(calendar.get("settings", {})))
+        ).model_dump()
+        if payload.get("semester"):
+            validate_rules({"semester": payload["semester"]})
+        for template in payload.get("templates", []):
+            validate_rules(template["rules"])
+        states = (payload.get("export_states") or [{}])[0].get("events", {})
+        revision = 0
+        if replace_workspace_id:
+            current = self.store.workspace(replace_workspace_id)
+            if current["version"] != expected_version:
+                raise LocalError("VERSION_CONFLICT", "工作区已变化，请重新预览恢复")
+            revision = self.store.preferences(replace_workspace_id)["revision"] + 1
+            calendar["version"] = max(calendar["version"], current["version"]) + 1
+            for state in self.store.documents("export_state", replace_workspace_id):
+                for eid, value in state["events"].items():
+                    if (
+                        eid not in states
+                        or states[eid]["sequence"] <= value["sequence"]
+                    ):
+                        states[eid] = value
+            self.store.safety_backup("restore")
+        self.store.externalize(payload["evidence"])
+        calendar = self.store.externalize(calendar)
+        wid = replace_workspace_id or identity()
+        self.store.set_workspace(wid, calendar)
+        for key, doc in list(self.store.state["documents"].items()):
+            if doc["workspace"] == wid:
+                del self.store.state["documents"][key]
+        self.store.state["previews"] = {
+            k: v
+            for k, v in self.store.state["previews"].items()
+            if v["workspace"] != wid
+        }
+        self.store.put("preferences", wid, wid, dict(revision=revision, values=prefs))
+        if payload.get("semester"):
+            self.store.put("semester", wid, wid, payload["semester"])
+        profile_ids = {p["id"]: identity() for p in payload.get("profiles", [])}
+        for kind, items in [
+            ("template", payload.get("templates", [])),
+            ("profile", payload.get("profiles", [])),
+            ("export", payload.get("exports", [])),
+        ]:
+            for item in items:
+                item["id"] = (
+                    profile_ids[item["id"]] if kind == "profile" else identity()
+                )
+                item.pop("path", None)
+                if kind == "export":
+                    item["profile_id"] = profile_ids.get(item.get("profile_id"), "")
+                self.store.put(
+                    kind, item["id"], "" if kind == "template" else wid, item
+                )
+        if states:
+            self.store.put("export_state", wid, wid, dict(id=wid, events=states))
+        del self.restore_tokens[token]
+        self.store.collect_evidence()
+        return self.workspace(wid)
 
     def workspace(self, workspace_id):
         workspace = self.store.workspace(workspace_id)
@@ -116,31 +214,22 @@ class Application:
             raise LocalError("NOT_FOUND", "文件不存在")
         return job, file
 
-    def image_preview(self, job_id, file_id):
-        import base64
-        import io
-        from PIL import Image, ImageOps
-
-        job, file = self.job_file(job_id, file_id)
-        if file["suffix"] not in IMAGES:
-            raise LocalError("INVALID_INPUT", "请选择图片")
-        with Image.open(self.jobs.file_path(job, file)) as original:
-            picture = ImageOps.exif_transpose(original).convert("RGB")
-            picture.thumbnail((1800, 1800))
-            stream = io.BytesIO()
-            picture.save(stream, format="JPEG", quality=88)
-        return "data:image/jpeg;base64," + base64.b64encode(stream.getvalue()).decode(
-            "ascii"
-        )
-
     def ocr_details(self, job_id, file_id):
         _, file = self.job_file(job_id, file_id)
         report = file.get("report") or {}
         return next((f["ocr"] for f in report.get("files", []) if "ocr" in f), {})
 
-    def edit_draft(self, job_id, edits):
+    def edit_draft(self, job_id, edits, expected_revision=None):
         with self.jobs.lock:
             job = self.store.document("job", job_id)
+            if (
+                expected_revision is not None
+                and job.get("revision") != expected_revision
+            ):
+                raise LocalError(
+                    "VERSION_CONFLICT",
+                    "草稿已被另一个标签页修改，请重新打开任务后再核对",
+                )
             if job["status"] != "review" or not job.get("report"):
                 raise LocalError("INVALID_INPUT", "请先完成识别")
             if not isinstance(edits, list) or not 1 <= len(edits) <= 5000:
@@ -180,7 +269,7 @@ class Application:
                 [SimpleNamespace(**e) for e in values]
             )
             self.store.put("job", job_id, job["workspace_id"], job)
-            return self.jobs.public(job)
+            return self.get_job(job_id)
 
     def course_draft(self, workspace_id, course=None, semester=None, courses=None):
         self.store.workspace(workspace_id)
@@ -235,25 +324,15 @@ class Application:
         values = self.store.documents("semester", workspace_id)
         return values[0] if values else None
 
-    def delete_template(self, template_id):
-        self.store.document("template", template_id)
+    def delete_template(self, template_id, expected_revision=None):
+        current = self.store.document("template", template_id)
+        if (
+            expected_revision is not None
+            and current.get("revision", 0) != expected_revision
+        ):
+            raise LocalError("VERSION_CONFLICT", "模板已变化，请刷新后重试")
         self.store.delete("template", template_id)
         return True
-
-    def diagnostics(self):
-        import platform
-        from .ocr import readiness
-
-        result = readiness()
-        return dict(
-            version=__version__,
-            system=platform.system(),
-            release=platform.release(),
-            architecture=platform.machine(),
-            python=platform.python_version(),
-            database_schema=2,
-            ocr_ready=result["ready"],
-        )
 
     @staticmethod
     def _calendar_report(report):
@@ -267,7 +346,14 @@ class Application:
                 sheet.pop("preview", None)
         return result
 
-    def preview_change(self, workspace_id, expected_version, operation, job_id=None):
+    def preview_change(
+        self,
+        workspace_id,
+        expected_version,
+        operation,
+        job_id=None,
+        expected_job_revision=None,
+    ):
         current = self.store.workspace(workspace_id)["calendar"]
         if current["version"] != expected_version:
             raise LocalError("VERSION_CONFLICT", "日历已变化，请刷新后重新预览")
@@ -275,6 +361,13 @@ class Application:
         dependency = None
         if job_id:
             job = self.store.document("job", job_id)
+            if (
+                expected_job_revision is not None
+                and job.get("revision") != expected_job_revision
+            ):
+                raise LocalError(
+                    "VERSION_CONFLICT", "草稿已变化，请重新打开任务后再预览"
+                )
             if (
                 job["workspace_id"] != workspace_id
                 or job["status"] != "review"
@@ -372,50 +465,6 @@ class Application:
             ]
         return preview
 
-    def commit_change(self, preview_id, expected_version):
-        result = self.store.commit(preview_id, expected_version)
-        warning = ""
-        try:
-            if result.get("job_id"):
-                self.jobs.clean(result["job_id"])
-            self.store.safety_backup()
-        except OSError:
-            warning = "安排已保存，但临时文件清理或自动恢复点失败，请检查空间并手动备份"
-        return {
-            **result,
-            "warning": warning,
-            "workspace": self.workspace(result["workspace_id"]),
-        }
-
-    def _event_view(self, workspace_id):
-        with self.store.connection() as db:
-            row = db.execute(
-                "SELECT version FROM workspaces WHERE id=?", (workspace_id,)
-            ).fetchone()
-            if row is None:
-                raise LocalError("NOT_FOUND", "工作区不存在，请重新选择")
-            cached = self._views.get(workspace_id)
-            if cached is not None and cached["calendar"]["version"] == row[0]:
-                return cached
-            calendar = self.store.workspace(workspace_id)["calendar"]
-            values = [(record, effective(record)) for record in calendar["events"]]
-            visible = [
-                SimpleNamespace(**value)
-                for record, value in values
-                if not record["hidden"]
-                and not record.get("cancelled")
-                and not record.get("archived")
-                and value["status"] == "confirmed"
-            ]
-            result = dict(
-                calendar=calendar, values=values, conflicts=detect_conflicts(visible)
-            )
-            self._views.pop(workspace_id, None)
-            self._views[workspace_id] = result
-            if len(self._views) > 3:
-                self._views.pop(next(iter(self._views)))
-            return result
-
     def events(
         self,
         workspace_id,
@@ -495,13 +544,20 @@ class Application:
             conflicts=len(conflicts),
         )
 
-    def save_template(self, name, rules, description="", template_id=None):
+    def save_template(
+        self, name, rules, description="", template_id=None, expected_revision=None
+    ):
         name = name.strip()
         if not name or len(name) > 100 or len(description) > 2000:
             raise LocalError("INVALID_INPUT", "请填写有效模板名称和说明")
         rules = validate_rules(rules)
         if template_id:
-            self.store.document("template", template_id)
+            current = self.store.document("template", template_id)
+            if (
+                expected_revision is not None
+                and current.get("revision", 0) != expected_revision
+            ):
+                raise LocalError("VERSION_CONFLICT", "模板已变化，请刷新后重试")
         value = dict(
             format="calisift.template",
             version=1,
@@ -511,7 +567,7 @@ class Application:
             rules=rules,
         )
         self.store.put("template", value["id"], "", value)
-        return value
+        return self.store.document("template", value["id"])
 
     def import_template(self, data):
         value = json.loads(data)
@@ -530,12 +586,33 @@ class Application:
 
     def export_template(self, template_id):
         value = self.store.document("template", template_id)
-        return encode({k: v for k, v in value.items() if k != "id"})
+        return encode({k: v for k, v in value.items() if k not in ("id", "revision")})
 
     def save_profile(
-        self, workspace_id, name, options, profile_id=None, filename="CaliSift-日程.ics"
+        self,
+        workspace_id,
+        name,
+        options,
+        profile_id=None,
+        filename="CaliSift-日程.ics",
+        expected_revision=None,
     ):
         self.store.workspace(workspace_id)
+        if profile_id:
+            current = next(
+                (
+                    p
+                    for p in self.store.documents("profile", workspace_id)
+                    if p["id"] == profile_id
+                ),
+                None,
+            )
+            if (
+                not current
+                or expected_revision is not None
+                and current.get("revision", 0) != expected_revision
+            ):
+                raise LocalError("VERSION_CONFLICT", "导出方案已变化，请刷新后重试")
         if not name.strip() or len(name) > 100:
             raise LocalError("INVALID_INPUT", "请填写导出方案名称")
         # Validate options without failing on unrelated incomplete events.
@@ -551,7 +628,7 @@ class Application:
             filename=filename,
         )
         self.store.put("profile", value["id"], workspace_id, value)
-        return value
+        return self.store.document("profile", value["id"])
 
     def export_preview(self, workspace_id, options):
         calendar = self.store.workspace(workspace_id)["calendar"]
@@ -615,7 +692,16 @@ class Application:
             calendar=candidate,
         )
 
-    def export_file(self, workspace_id, expected_version, options, path, profile_id=""):
+    def export_file(
+        self,
+        workspace_id,
+        expected_version,
+        options,
+        filename="CaliSift-日程.ics",
+        profile_id="",
+    ):
+        if not isinstance(filename, str) or not filename.strip() or len(filename) > 200:
+            raise ValueError("请填写有效的导出文件名")
         with self.store.lock:
             preview = self.export_preview(workspace_id, options)
             if preview["version"] != expected_version:
@@ -692,13 +778,10 @@ class Application:
                     for k in set(before) & set(fingerprints)
                 ),
             )
-            target = Path(path)
-            atomic_write(target, content)
             record = dict(
                 id=identity(),
                 created_at=now(),
-                filename=target.name,
-                path=str(target.resolve()),
+                filename=filename,
                 profile_id=profile_id,
                 count=len(fingerprints),
                 version=expected_version,
@@ -716,11 +799,14 @@ class Application:
                     dict(id=workspace_id, events=state),
                 )
                 self.store._put(db, "export", record["id"], workspace_id, record)
-            return record
-
-    def backup_file(self, workspace_id, path):
-        atomic_write(Path(path), pack_backup(self.store, workspace_id))
-        return dict(path=str(Path(path).resolve()))
+            return {
+                **record,
+                "download": dict(
+                    filename=filename,
+                    mime="text/calendar;charset=utf-8",
+                    data=base64.b64encode(content).decode("ascii"),
+                ),
+            }
 
     def prepare_restore(self, data):
         payload = unpack_backup(data)
@@ -734,125 +820,3 @@ class Application:
             sources=len(calendar["sources"]),
             evidence=len(payload["evidence"]["crops"]),
         )
-
-    def restore_backup(self, token, replace_workspace_id=None, expected_version=None):
-        if token not in self.restore_tokens:
-            raise LocalError("VERSION_CONFLICT", "恢复预览已失效，请重新选择备份")
-        payload = deepcopy(self.restore_tokens[token])
-        calendar = payload["calendar"]
-        # Validate all ancillary data before writing a single workspace row.
-        from .preferences import Preferences, from_legacy
-
-        prefs = Preferences.model_validate(
-            payload.get("preferences", from_legacy(calendar.get("settings", {})))
-        ).model_dump()
-        if payload.get("semester"):
-            validate_rules({"semester": payload["semester"]})
-        for template in payload.get("templates", []):
-            validate_rules(template["rules"])
-        with self.store.lock:
-            export_states = (payload.get("export_states") or [{}])[0].get("events", {})
-            if replace_workspace_id:
-                current = self.store.workspace(replace_workspace_id)
-                if current["version"] != expected_version:
-                    raise LocalError("VERSION_CONFLICT", "工作区已变化，请重新预览恢复")
-                calendar["version"] = max(calendar["version"], current["version"]) + 1
-                for state in self.store.documents("export_state", replace_workspace_id):
-                    for eid, value in state["events"].items():
-                        if (
-                            eid not in export_states
-                            or export_states[eid]["sequence"] <= value["sequence"]
-                        ):
-                            export_states[eid] = value
-            wid = replace_workspace_id or identity()
-            self.store.safety_backup("restore")
-            self.store.externalize(payload["evidence"])
-            calendar = self.store.externalize(calendar)
-            with self.store.connection(True) as db:
-                if replace_workspace_id:
-                    db.execute(
-                        "UPDATE workspaces SET name=?,version=?,calendar=?,updated_at=? WHERE id=?",
-                        (
-                            calendar["personName"],
-                            calendar["version"],
-                            encode(calendar),
-                            now(),
-                            wid,
-                        ),
-                    )
-                    db.execute(
-                        "DELETE FROM documents WHERE workspace=? AND kind IN ('profile','export','export_state')",
-                        (wid,),
-                    )
-                    db.execute(
-                        "DELETE FROM previews WHERE workspace=? AND receipt IS NULL",
-                        (wid,),
-                    )
-                else:
-                    db.execute(
-                        "INSERT INTO workspaces VALUES(?,?,?,?,?)",
-                        (
-                            wid,
-                            calendar["personName"],
-                            calendar["version"],
-                            encode(calendar),
-                            now(),
-                        ),
-                    )
-                self.store._index(db, wid, calendar)
-                self.store._put(
-                    db,
-                    "preferences",
-                    wid,
-                    wid,
-                    dict(
-                        revision=(
-                            self.store.preferences(wid)["revision"] + 1
-                            if replace_workspace_id
-                            else 0
-                        ),
-                        values=prefs,
-                    ),
-                )
-                db.execute(
-                    "DELETE FROM documents WHERE kind='semester' AND workspace=?",
-                    (wid,),
-                )
-                if payload.get("semester"):
-                    self.store._put(db, "semester", wid, wid, payload["semester"])
-                profile_ids = {
-                    item["id"]: identity() for item in payload.get("profiles", [])
-                }
-                for kind, items in [
-                    ("template", payload.get("templates", [])),
-                    ("profile", payload.get("profiles", [])),
-                    ("export", payload.get("exports", [])),
-                ]:
-                    for item in items:
-                        item["id"] = (
-                            profile_ids[item["id"]] if kind == "profile" else identity()
-                        )
-                        if kind == "export":
-                            item.pop("path", None)
-                            item["profile_id"] = profile_ids.get(
-                                item.get("profile_id"), ""
-                            )
-                        self.store._put(
-                            db,
-                            kind,
-                            item["id"],
-                            "" if kind == "template" else wid,
-                            item,
-                        )
-                if export_states:
-                    self.store._put(
-                        db, "export_state", wid, wid, dict(id=wid, events=export_states)
-                    )
-            del self.restore_tokens[token]
-            return self.workspace(wid)
-
-    def close(self):
-        try:
-            self.jobs.close()
-        finally:
-            self.instance.close()

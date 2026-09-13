@@ -3,8 +3,8 @@
 Thank you for helping make personal schedules easier to verify.
 
 Start with [development instructions](docs/development.md), the
-[desktop plan](docs/desktop-open-source-plan.md), and the
-[verification status](docs/desktop-verification.md). Small, focused pull requests
+[web architecture](docs/web-architecture.md), and the
+[verification status](docs/verification-web.md). Small, focused pull requests
 with a reproducible before/after example are easiest to review.
 
 ## Reproduction data
@@ -27,10 +27,10 @@ separately; rotated or recolored variants are not independent layouts.
   Include migration handling when changing stored schemas.
 - Use declarative templates. Do not execute imported code, infer a similar name,
   or silently infer school holiday adjustments.
-- Run tests appropriate to the change. The full Windows gate includes real
-  local OCR and at least 90% Python branch-aware coverage.
-- Test native dialogs and the frozen worker when changing desktop boundaries.
-  Browser-only tests do not prove installation or native interaction.
+- Run Python domain and Vue regressions plus real Chrome, Edge and Firefox tests.
+  The browser gate includes real WASM OCR, offline use, persistence and failure cases.
+- Keep runtime dependencies at same-origin static URLs with hashes; do not add
+  uploads, accounts, synchronization, native shells or installer pipelines.
 - Update documentation and verification records. Clearly mark unsupported
   platforms, incomplete data sets and untested calendar clients.
 

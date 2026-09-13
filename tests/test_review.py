@@ -1,14 +1,31 @@
 from copy import deepcopy
 
 import pytest
-from fastapi.testclient import TestClient
 
 from scripts.generate_fixtures import NAME, csv_bytes
 from xingcheng.aggregate import merge_reports
-from xingcheng.api import app
 from xingcheng.parsing import parse_file
 
-client = TestClient(app)
+from xingcheng.contracts import ReviewInput, ReportInput
+from xingcheng.review import review_report
+from types import SimpleNamespace
+
+
+def review_result(data):
+    try:
+        payload = ReviewInput.model_validate(data)
+        report = payload.report.report()
+        for event, incoming in zip(
+            report.events + report.pending,
+            payload.report.events + payload.report.pending,
+        ):
+            event.id = incoming.id
+        result = review_report(
+            report, [e.model_dump() for e in payload.edits]
+        ).to_dict()
+        return SimpleNamespace(status_code=200, json=lambda: result)
+    except ValueError:
+        return SimpleNamespace(status_code=422)
 
 
 @pytest.fixture
@@ -27,9 +44,8 @@ def report():
 
 def correct(report, event=None, **values):
     event = event or report["events"][0]
-    return client.post(
-        "/api/review",
-        json={
+    return review_result(
+        {
             "report": report,
             "edits": [
                 {
@@ -92,7 +108,13 @@ def test_duplicate_correction_merges_sources_and_audit(report):
     assert result["events"][0]["reviews"][0]["before"]["title"] == "演练"
     assert not result["conflicts"]
     assert (
-        client.post("/api/merge", json={"reports": [result, result]}).json() == result
+        merge_reports(
+            [
+                ReportInput.model_validate(result).report(),
+                ReportInput.model_validate(result).report(),
+            ]
+        ).to_dict()
+        == result
     )
 
 
@@ -139,12 +161,7 @@ def test_stale_duplicate_and_excessive_edits(report):
         "event_id": report["events"][0]["id"],
         "values": {"date": "2026-09-08", "title": "早班"},
     }
-    assert (
-        client.post(
-            "/api/review", json={"report": report, "edits": [edit, edit]}
-        ).status_code
-        == 422
-    )
+    assert review_result({"report": report, "edits": [edit, edit]}).status_code == 422
     report["events"][1]["id"] = report["events"][0]["id"]
     assert correct(report).status_code == 422
     report["events"].pop()
@@ -152,18 +169,10 @@ def test_stale_duplicate_and_excessive_edits(report):
     assert correct(report).status_code == 422
 
 
-def test_no_implicit_end_time_and_body_limit(report):
+def test_no_implicit_end_time(report):
     result = correct(report, start="14:00").json()
     assert result["events"][-1]["precision"] == "point"
     assert result["events"][-1]["end"] is None
-    assert (
-        client.post(
-            "/api/review",
-            content=b"{}",
-            headers={"content-length": str(4 * 1024 * 1024 + 1)},
-        ).status_code
-        == 413
-    )
 
 
 def test_merged_report_above_single_file_limit_can_be_reviewed(report):

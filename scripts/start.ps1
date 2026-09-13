@@ -1,4 +1,4 @@
 $ErrorActionPreference = 'Stop'
 Set-Location -LiteralPath (Split-Path -Parent $PSScriptRoot)
-& '.\.venv\Scripts\python.exe' -X utf8 -m xingcheng.desktop
+python scripts/serve-web.py
 exit $LASTEXITCODE

@@ -1,0 +1,226 @@
+{
+  "pyodide": "314.0.6",
+  "packages": [
+    "pydantic",
+    "numpy",
+    "opencv-python",
+    "pillow",
+    "pyclipper",
+    "shapely"
+  ],
+  "files": [
+    {
+      "name": "annotated-types",
+      "version": "0.7.0",
+      "path": "runtime/annotated_types-0.7.0-py3-none-any.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.6/full/annotated_types-0.7.0-py3-none-any.whl",
+      "sha256": "6b34f564725f8d309442f8d15abcceed1bf140fe2412e2c58da721426ae2222e"
+    },
+    {
+      "name": "numpy",
+      "version": "2.4.6",
+      "path": "runtime/numpy-2.4.6-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.6/full/numpy-2.4.6-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "sha256": "32959d4137cec8143d75016d029281df3d2e80a232896ed903c2b59e1c44ee9f"
+    },
+    {
+      "name": "opencv-python",
+      "version": "4.11.0.86",
+      "path": "runtime/opencv_python-4.11.0.86-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.6/full/opencv_python-4.11.0.86-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "sha256": "0fa26edef0801ec27d17dcbb36ddbb1f46d0490d557c0adf66b02751fd55fad3"
+    },
+    {
+      "name": "pillow",
+      "version": "12.2.0",
+      "path": "runtime/pillow-12.2.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.6/full/pillow-12.2.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "sha256": "18b0c6a423b9b9ffe0b6679f8ebe9dc619d557c5647bfda449583d276d79d422"
+    },
+    {
+      "name": "pyclipper",
+      "version": "1.4.0",
+      "path": "runtime/pyclipper-1.4.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.6/full/pyclipper-1.4.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "sha256": "3644f58dcb8a0e23f0f68dc3da3c35897ac63a2d870fcf1f3a216219fa7c69ad"
+    },
+    {
+      "name": "pydantic",
+      "version": "2.12.5",
+      "path": "runtime/pydantic-2.12.5-py3-none-any.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.6/full/pydantic-2.12.5-py3-none-any.whl",
+      "sha256": "52d15d19fbe2a62ac9b63348df7b38e5ebb186063a9b923a837dd6e43273b414"
+    },
+    {
+      "name": "pydantic-core",
+      "version": "2.41.5",
+      "path": "runtime/pydantic_core-2.41.5-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.6/full/pydantic_core-2.41.5-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "sha256": "9802bd7a5e6679ec4c13be778f19f021e6147459c89cc916b913f7970f86dddb"
+    },
+    {
+      "name": "shapely",
+      "version": "2.1.2",
+      "path": "runtime/shapely-2.1.2-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.6/full/shapely-2.1.2-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "sha256": "6a80ae3a464fb9c7a41a3d8a7ff34644494e38f017d312cdf7720b813c92a31e"
+    },
+    {
+      "name": "typing-extensions",
+      "version": "4.15.0",
+      "path": "runtime/typing_extensions-4.15.0-py3-none-any.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.6/full/typing_extensions-4.15.0-py3-none-any.whl",
+      "sha256": "3f122252f0d498d80f7a684cc1d8baa6fa65b75e99447d77a6dd90e0f04302e3"
+    },
+    {
+      "name": "typing-inspection",
+      "version": "0.4.2",
+      "path": "runtime/typing_inspection-0.4.2-py3-none-any.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.6/full/typing_inspection-0.4.2-py3-none-any.whl",
+      "sha256": "c9270737700f07813e1a87b63138993997afedbd2548f20fa739cc398f1b9f2f"
+    },
+    {
+      "name": "openpyxl",
+      "version": "3.1.5",
+      "path": "wheels/openpyxl-3.1.5-py2.py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/c0/da/977ded879c29cbd04de313843e76868e6e13408a94ed6b987245dc7c8506/openpyxl-3.1.5-py2.py3-none-any.whl",
+      "sha256": "5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2"
+    },
+    {
+      "name": "xlrd",
+      "version": "2.0.2",
+      "path": "wheels/xlrd-2.0.2-py2.py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/1a/62/c8d562e7766786ba6587d09c5a8ba9f718ed3fa8af7f4553e8f91c36f302/xlrd-2.0.2-py2.py3-none-any.whl",
+      "sha256": "ea762c3d29f4cca48d82df517b6d89fbce4db3107f9d78713e48cd321d5c9aa9"
+    },
+    {
+      "name": "et-xmlfile",
+      "version": "2.0.0",
+      "path": "wheels/et_xmlfile-2.0.0-py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl",
+      "sha256": "7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa"
+    },
+    {
+      "name": "defusedxml",
+      "version": "0.7.1",
+      "path": "wheels/defusedxml-0.7.1-py2.py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/07/6c/aa3f2f849e01cb6a001cd8554a88d4c77c5c1a31c95bdf1cf9301e6d9ef4/defusedxml-0.7.1-py2.py3-none-any.whl",
+      "sha256": "a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61"
+    },
+    {
+      "name": "pyodide.mjs",
+      "version": "314.0.6",
+      "path": "runtime/pyodide.mjs",
+      "local": "web/node_modules/pyodide/pyodide.mjs",
+      "sha256": "69e3f6ccec3e14b465df60be577ca62f536251406b9a00cce019eac5252a2495"
+    },
+    {
+      "name": "pyodide.asm.mjs",
+      "version": "314.0.6",
+      "path": "runtime/pyodide.asm.mjs",
+      "local": "web/node_modules/pyodide/pyodide.asm.mjs",
+      "sha256": "2ac5eba365ec12839c75c03b39b3be1dd63b798852cc460b014b52238be042f7"
+    },
+    {
+      "name": "pyodide.asm.wasm",
+      "version": "314.0.6",
+      "path": "runtime/pyodide.asm.wasm",
+      "local": "web/node_modules/pyodide/pyodide.asm.wasm",
+      "sha256": "3a0a00dfeaa348ac20f9ef09904233d32d33f644339662d4af368f8a2010f37a"
+    },
+    {
+      "name": "python_stdlib.zip",
+      "version": "314.0.6",
+      "path": "runtime/python_stdlib.zip",
+      "local": "web/node_modules/pyodide/python_stdlib.zip",
+      "sha256": "80c5be6babfe03297069703410c3c29404dcf2525d2b128746bae5536f94831f"
+    },
+    {
+      "name": "pyodide-lock.json",
+      "version": "314.0.6",
+      "path": "runtime/pyodide-lock.json",
+      "local": "web/node_modules/pyodide/pyodide-lock.json",
+      "sha256": "3fdaef09e9e365c85e002737720f8d0ab8f278c1c244a2dde6a37663cf488ad4"
+    },
+    {
+      "name": "ort.wasm.min.mjs",
+      "version": "1.23.2",
+      "path": "ort/ort.wasm.min.mjs",
+      "local": "web/node_modules/onnxruntime-web/dist/ort.wasm.min.mjs",
+      "sha256": "69751720f611e37d1ce2fa3c6ebaa80f949014752636c5f8887a63d40feadcc7"
+    },
+    {
+      "name": "ort-wasm-simd-threaded.mjs",
+      "version": "1.23.2",
+      "path": "ort/ort-wasm-simd-threaded.mjs",
+      "local": "web/node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.mjs",
+      "sha256": "90a557d15c02bac4504d95b67f431d8594635ed2a0a62a7f2cd83d090ff91d3e"
+    },
+    {
+      "name": "ort-wasm-simd-threaded.wasm",
+      "version": "1.23.2",
+      "path": "ort/ort-wasm-simd-threaded.wasm",
+      "local": "web/node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm",
+      "sha256": "45eaee27761ad883742a8d4b8fce1538d60ce43b51adf1726fafccc59b8c1a15"
+    },
+    {
+      "name": "Det",
+      "version": "PP-OCRv5",
+      "path": "models/ch_PP-OCRv5_mobile_det.onnx",
+      "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.4.0/onnx/PP-OCRv5/det/ch_PP-OCRv5_mobile_det.onnx",
+      "local": "models/ocr/ch_PP-OCRv5_mobile_det.onnx",
+      "sha256": "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae"
+    },
+    {
+      "name": "Rec",
+      "version": "PP-OCRv5",
+      "path": "models/ch_PP-OCRv5_rec_mobile_infer.onnx",
+      "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.4.0/onnx/PP-OCRv5/rec/ch_PP-OCRv5_rec_mobile_infer.onnx",
+      "local": "models/ocr/ch_PP-OCRv5_rec_mobile_infer.onnx",
+      "sha256": "5825fc7ebf84ae7a412be049820b4d86d77620f204a041697b0494669b1742c5"
+    },
+    {
+      "name": "Cls",
+      "version": "PP-OCRv2",
+      "path": "models/ch_ppocr_mobile_v2.0_cls_infer.onnx",
+      "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.4.0/onnx/PP-OCRv4/cls/ch_ppocr_mobile_v2.0_cls_infer.onnx",
+      "local": "models/ocr/ch_ppocr_mobile_v2.0_cls_infer.onnx",
+      "sha256": "e47acedf663230f8863ff1ab0e64dd2d82b838fceb5957146dab185a89d6215c"
+    },
+    {
+      "name": "Pyodide-MPL-2.0.txt",
+      "version": "source-notice",
+      "path": "licenses/Pyodide-MPL-2.0.txt",
+      "url": "https://raw.githubusercontent.com/pyodide/pyodide/314.0.6/LICENSE",
+      "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5"
+    },
+    {
+      "name": "sources/pyodide-314.0.6.tar.gz",
+      "version": "source-notice",
+      "path": "licenses/sources/pyodide-314.0.6.tar.gz",
+      "url": "https://codeload.github.com/pyodide/pyodide/tar.gz/refs/tags/314.0.6",
+      "sha256": "5cd5efb8115446ab22bc4689a69679fbbab8855d2e89bf4d7f010bbf388ae8db"
+    },
+    {
+      "name": "sources/pyodide-recipes-314-20260815.tar.gz",
+      "version": "source-notice",
+      "path": "licenses/sources/pyodide-recipes-314-20260815.tar.gz",
+      "url": "https://codeload.github.com/pyodide/pyodide-recipes/tar.gz/refs/tags/314-20260815",
+      "sha256": "4dcae98adfb59927de35275e6ebf6f553673dffef2dac244df93203a40c4d01c"
+    },
+    {
+      "name": "sources/shapely-2.1.2.tar.gz",
+      "version": "source-notice",
+      "path": "licenses/sources/shapely-2.1.2.tar.gz",
+      "url": "https://files.pythonhosted.org/packages/source/s/shapely/shapely-2.1.2.tar.gz",
+      "sha256": "2ed4ecb28320a433db18a5bf029986aa8afcfd740745e78847e330d5d94922a9"
+    },
+    {
+      "name": "sources/geos-3.12.1.tar.bz2",
+      "version": "source-notice",
+      "path": "licenses/sources/geos-3.12.1.tar.bz2",
+      "url": "https://download.osgeo.org/geos/geos-3.12.1.tar.bz2",
+      "sha256": "d6ea7e492224b51193e8244fe3ec17c4d44d0777f3c32ca4fb171140549a0d03"
+    }
+  ]
+}

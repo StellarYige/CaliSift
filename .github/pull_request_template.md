@@ -2,6 +2,6 @@ Describe the problem and the resulting behavior. Include a short before/after ex
 
 Validation performed:
 
-Data migration, native packaging, or third-party license impact (if applicable):
+Browser data migration, offline resources, static deployment, or third-party license impact (if applicable):
 
 Remaining limits or unverified platforms:

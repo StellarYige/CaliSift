@@ -1,21 +1,17 @@
 {
   "name": "calisift",
-  "version": "0.3.0-alpha.2",
+  "version": "0.4.0-alpha.1",
   "private": true,
-  "description": "CaliSift desktop and historical mini-program tests",
+  "description": "CaliSift browser-only local calendar",
   "scripts": {
-    "test": "node --test tests-js/*.test.js",
-    "smoke": "node scripts/smoke-mini.js",
-    "build:desktop": "npm --prefix desktop run build",
-    "test:desktop": "npm --prefix desktop test"
+    "test": "npm --prefix web test",
+    "build": "python scripts/prepare-web.py && npm --prefix web run build",
+    "dev": "npm --prefix web run dev",
+    "test:browser": "npm --prefix web run test:browser",
+    "package": "python scripts/package-web.py"
   },
   "engines": {
     "node": ">=20"
   },
-  "devDependencies": {
-    "miniprogram-automator": "0.12.1"
-  },
-  "overrides": {
-    "jimp": "0.22.12"
-  }
+  "devDependencies": {}
 }

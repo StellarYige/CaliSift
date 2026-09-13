@@ -1,177 +1,8 @@
-"""Local OCR boundary. Models are installed out of band; uploads never trigger downloads."""
-
-from __future__ import annotations
+"""Local image preprocessing, layout and original evidence. Inference is provided by the browser."""
 
 import base64
-from contextlib import redirect_stdout
 import hashlib
-import importlib.util
 import io
-import json
-import os
-from pathlib import Path
-import subprocess
-import sys
-import tempfile
-import threading
-
-MODEL_DIR = Path(
-    os.environ.get(
-        "XINGCHENG_OCR_MODELS",
-        (
-            Path(sys._MEIPASS)
-            if getattr(sys, "frozen", False)
-            else Path(__file__).resolve().parents[2]
-        )
-        / "models"
-        / "ocr",
-    )
-)
-MODELS = {
-    "Det": (
-        "ch_PP-OCRv5_mobile_det.onnx",
-        "PP-OCRv5/det",
-        "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae",
-    ),
-    "Rec": (
-        "ch_PP-OCRv5_rec_mobile_infer.onnx",
-        "PP-OCRv5/rec",
-        "5825fc7ebf84ae7a412be049820b4d86d77620f204a041697b0494669b1742c5",
-    ),
-    "Cls": (
-        "ch_ppocr_mobile_v2.0_cls_infer.onnx",
-        "PP-OCRv4/cls",
-        "e47acedf663230f8863ff1ab0e64dd2d82b838fceb5957146dab185a89d6215c",
-    ),
-}
-FONT = (
-    "NotoSansSC.ttf",
-    "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da",
-)
-FONT_URL = "https://raw.githubusercontent.com/google/fonts/5e35378e6bda803962ee6fd257e444a7d459660d/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf"
-_verified_resources = {}
-OCR_TIMEOUT = 90
-_gate = threading.BoundedSemaphore(1)
-
-
-def readiness():
-    packages = all(
-        importlib.util.find_spec(m) for m in ("rapidocr", "onnxruntime", "cv2", "PIL")
-    )
-    missing, damaged = [], []
-    for filename, expected in [(v[0], v[2]) for v in MODELS.values()] + [FONT]:
-        path = MODEL_DIR / filename
-        try:
-            stat = path.stat()
-            key = (str(path.resolve()), stat.st_size, stat.st_mtime_ns)
-            actual = _verified_resources.get(key)
-            if actual is None:
-                actual = hashlib.sha256(path.read_bytes()).hexdigest()
-                _verified_resources[key] = actual
-            if actual != expected:
-                damaged.append(filename)
-        except OSError:
-            missing.append(filename)
-    ready = packages and not missing and not damaged
-    return dict(
-        ready=ready,
-        missing=missing,
-        damaged=damaged,
-        model="中文 PP-OCRv5 mobile / ONNX Runtime CPU",
-        message=(
-            ""
-            if ready
-            else "图片识别资源缺失或校验失败，请在设置中导入离线模型包；源码用户可运行 python -m scripts.install_ocr。表格仍可导入"
-        ),
-    )
-
-
-def verify_models():
-    if not readiness()["ready"]:
-        raise ValueError(readiness()["message"])
-    for filename, _, expected in MODELS.values():
-        if hashlib.sha256((MODEL_DIR / filename).read_bytes()).hexdigest() != expected:
-            raise ValueError("OCR 模型校验失败，请重新安装模型；表格导入仍可使用")
-    if hashlib.sha256((MODEL_DIR / FONT[0]).read_bytes()).hexdigest() != FONT[1]:
-        raise ValueError("OCR 字体校验失败，请重新安装")
-
-
-def recognize_isolated(data, filename, name, year, options):
-    if Path(filename).suffix.lower() not in (".png", ".jpg", ".jpeg"):
-        raise ValueError("图片仅支持 PNG、JPG、JPEG")
-    if not data or len(data) > 10 * 1024 * 1024:
-        raise ValueError("单图必须为 1 字节至 10 MiB")
-    if not readiness()["ready"]:
-        raise ValueError(readiness()["message"])
-    if not _gate.acquire(blocking=False):
-        raise ValueError("正在识别另一张图片，请稍后重试；表格导入仍可使用")
-    try:
-        with tempfile.TemporaryDirectory(prefix="xingcheng-ocr-") as directory:
-            path = Path(directory) / ("image" + Path(filename).suffix.lower())
-            path.write_bytes(data)
-            try:
-                process = subprocess.run(
-                    [sys.executable, "-m", "xingcheng.ocr", str(path)],
-                    input=json.dumps(
-                        dict(
-                            filename=Path(filename.replace("\\", "/")).name,
-                            name=name,
-                            year=year,
-                            options=options,
-                        )
-                    ),
-                    text=True,
-                    encoding="utf-8",
-                    capture_output=True,
-                    timeout=OCR_TIMEOUT,
-                    env={**os.environ, "PYTHONUTF8": "1"},
-                    creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
-                )
-                if process.returncode:
-                    raise ValueError("图片识别失败，请裁剪到清晰的打印体表格后重试")
-                result = json.loads(process.stdout)
-                if "error" in result:
-                    raise ValueError(result["error"])
-                return result
-            except subprocess.TimeoutExpired as exc:
-                raise ValueError(
-                    "图片识别超过 90 秒，请缩小图片区域后单独重试"
-                ) from exc
-    finally:
-        _gate.release()
-
-
-def engine():
-    verify_models()
-    from rapidocr import RapidOCR, OCRVersion, ModelType, EngineType, LangDet, LangRec
-
-    params = {
-        "Global.log_level": "error",
-        "Global.text_score": 0.4,
-        "Global.font_path": str(MODEL_DIR / FONT[0]),
-        "EngineConfig.onnxruntime.intra_op_num_threads": 2,
-        "EngineConfig.onnxruntime.inter_op_num_threads": 1,
-    }
-    for key, (filename, _, _) in MODELS.items():
-        params.update(
-            {
-                f"{key}.model_path": str(MODEL_DIR / filename),
-                f"{key}.engine_type": EngineType.ONNXRUNTIME,
-                f"{key}.model_type": ModelType.MOBILE,
-                f"{key}.ocr_version": (
-                    OCRVersion.PPOCRV4 if key == "Cls" else OCRVersion.PPOCRV5
-                ),
-            }
-        )
-    params.update({"Det.lang_type": LangDet.CH, "Rec.lang_type": LangRec.CH})
-    # Fail closed even if a future dependency attempts to fetch a dictionary/font.
-    from unittest.mock import patch
-
-    with patch(
-        "socket.socket.connect",
-        side_effect=RuntimeError("OCR runtime networking disabled"),
-    ):
-        return RapidOCR(params=params)
 
 
 def decode(data, options):
@@ -354,7 +185,7 @@ def reconstruct(array, blocks):
     return sheet, positions, reliable, bounded
 
 
-def recognize(data, filename, name, year, options, ocr_engine=None):
+async def recognize(data, filename, name, year, options, ocr_engine=None):
     import cv2
     import numpy as np
     from .parsing import parse_sheets, matches_name, field_name
@@ -362,12 +193,13 @@ def recognize(data, filename, name, year, options, ocr_engine=None):
     from unittest.mock import patch
 
     array, angle = decode(data, options)
-    ocr_engine = ocr_engine or engine()
+    if ocr_engine is None:
+        raise ValueError("OCR inference must be provided by ONNX Runtime Web")
     with patch(
         "socket.socket.connect",
         side_effect=RuntimeError("OCR runtime networking disabled"),
     ):
-        result = ocr_engine(array)
+        result = await ocr_engine(array)
 
         def quality(output):
             horizontal = (
@@ -436,7 +268,7 @@ def recognize(data, filename, name, year, options, ocr_engine=None):
             best = initial_quality = quality(result)
             for turns in (1, 2, 3):
                 rotated = np.rot90(array, turns).copy()
-                attempt = ocr_engine(rotated)
+                attempt = await ocr_engine(rotated)
                 score = quality(attempt)
                 if score > best:
                     result, best, best_array = attempt, score, rotated
@@ -568,25 +400,3 @@ def recognize(data, filename, name, year, options, ocr_engine=None):
             + base64.b64encode(preview_bytes).decode("ascii"),
         )
     return merge_reports([report]).to_dict()
-
-
-if __name__ == "__main__":
-    settings = json.load(sys.stdin)
-    try:
-        with redirect_stdout(sys.stderr):
-            output = recognize(
-                Path(sys.argv[1]).read_bytes(),
-                settings["filename"],
-                settings["name"],
-                settings["year"],
-                settings["options"],
-            )
-    except Exception as exc:
-        output = {
-            "error": (
-                str(exc)
-                if isinstance(exc, ValueError)
-                else "图片识别失败，请重新拍摄清晰表格后重试"
-            )
-        }
-    json.dump(output, sys.stdout, ensure_ascii=False)

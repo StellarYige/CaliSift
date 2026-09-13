@@ -1,40 +1,23 @@
-# Third-party notices
+# Third-party notices — web edition
 
-CaliSift source is Apache-2.0. Third-party components keep their own licenses.
-The desktop distribution includes unmodified components and the accompanying
-license texts under `licenses/`. The original Python module name and existing
-`@xingcheng.local` calendar UIDs are retained for data compatibility.
+CaliSift code is Apache-2.0. Third-party components retain their own licenses. The static distribution includes license files under `licenses/`, with the runtime wheel and NPM version locks. Original `@xingcheng.local` ICS UIDs remain unchanged for backup compatibility.
 
-| Component | Use | License / primary source |
+| Component | Use and source | License |
 | --- | --- | --- |
-| CPython 3.11 | Bundled runtime | PSF License; Python distribution LICENSE |
-| pywebview 6.2.1 | Native desktop bridge | BSD-3-Clause; https://github.com/r0x0r/pywebview |
-| Vue 3 | Local desktop interface | MIT; https://github.com/vuejs/core |
-| SQLite | Local data file | Public domain; https://sqlite.org/copyright.html |
-| RapidOCR 3.4.2 | OCR pipeline | Apache-2.0; https://github.com/RapidAI/RapidOCR/tree/v3.4.2 |
-| ONNX Runtime 1.23.2 | CPU inference | MIT; https://github.com/microsoft/onnxruntime |
-| PP-OCRv5 mobile det/rec, PP-OCR mobile v2 cls | OCR weights converted to ONNX | Apache-2.0 publisher metadata; https://www.modelscope.cn/models/RapidAI/RapidOCR ; upstream https://github.com/PaddlePaddle/PaddleOCR |
-| OpenCV 4.11 | Image geometry | Apache-2.0; https://opencv.org/license/ |
-| Noto Sans SC | Chinese font used by local OCR | SIL OFL 1.1; pinned Google Fonts revision in `resources/models.json` |
-| Microsoft WebView2 | System web renderer | Microsoft redistribution terms; separate runtime, not relicensed under Apache-2.0 |
-| PyInstaller | Build tool | GPL-2.0-or-later with bootloader exception; https://pyinstaller.org/en/stable/license.html |
-| Inno Setup 6.7.3 | Installer builder | Inno Setup license; https://jrsoftware.org/files/is/license.txt |
-| Shapely / GEOS | OCR geometry | BSD-3-Clause / LGPL-2.1-or-later; https://libgeos.org/usage/download/ |
-| .NET libraries bundled with pythonnet | Native bridge support | .NET Foundation MIT license and third-party notices; exact NuGet package list in `resources/dotnet-dependencies.json` |
-| certifi / tqdm | Dependency support | MPL-2.0 / MPL-2.0 and MIT; complete corresponding sources bundled |
+| Pyodide 314.0.6 | Unmodified browser runtime, [corresponding source](https://github.com/pyodide/pyodide/tree/314.0.6) | MPL-2.0 |
+| CPython 3.14.2 | Pyodide's embedded Python, [source](https://github.com/python/cpython/tree/v3.14.2) | PSF |
+| Vue 3.5.42 | Review interface, [source](https://github.com/vuejs/core) | MIT |
+| ONNX Runtime Web 1.23.2 | Single-thread WASM inference, [source](https://github.com/microsoft/onnxruntime/tree/v1.23.2) | MIT |
+| RapidOCR 3.4.2 | Extracted DB preprocessing/postprocessing in `src/xingcheng/vendor/db.py`, [source](https://github.com/RapidAI/RapidOCR/tree/v3.4.2) | Apache-2.0 |
+| PP-OCRv5 mobile detection/recognition; PP-OCR mobile v2 classification | Fixed ONNX models and metadata dictionary, [publisher](https://www.modelscope.cn/models/RapidAI/RapidOCR), [upstream](https://github.com/PaddlePaddle/PaddleOCR) | Apache-2.0 publisher metadata |
+| Pydantic 2.12.5 and pydantic-core 2.41.5 | Browser validation | MIT |
+| OpenPyXL / xlrd / defusedxml | Spreadsheet reading | MIT / BSD / PSF |
+| NumPy / OpenCV / Pillow / pyclipper | Local image geometry and arrays | BSD / Apache-2.0 / HPND / MIT |
+| Shapely 2.1.2 / GEOS 3.12.1 | DB polygon expansion, [Shapely source](https://github.com/shapely/shapely/tree/2.1.2), [Pyodide recipe and rebuild environment](https://github.com/pyodide/pyodide-recipes/tree/314-20260815/packages/shapely) | BSD-3-Clause / LGPL-2.1-or-later |
+| Noto Sans SC | Synthetic test fixture font, not required at runtime | OFL-1.1 |
 
-Exact dependency versions and dependency license texts are generated from the
-locked build environment by `scripts/collect_licenses.py`. Build tools and test
-dependencies are not represented as code authored by CaliSift. Generated test
-images in `tests/fixtures/ocr` are regression fixtures, not photographs or an
-independent accuracy benchmark. The star mark and example CSV files are original
-CaliSift project assets, distributed under Apache-2.0.
+`resources/web-runtime-lock.json` specifies every downloaded runtime asset and its SHA-256. `web/package-lock.json` separately locks JavaScript packages. Runtime wheels retain their distribution license metadata, and the build extracts those notices into the static bundle. `licenses/Pyodide-MPL-2.0.txt` and `licenses/Python-PSF.txt` accompany the runtime. Original upstream copyright notices apply to the extracted detector and model metadata dictionary.
 
-Corresponding source archives for the unmodified GEOS, Shapely, certifi and tqdm
-components are included in the installer and as a separate release asset.
-See [source and rebuilding notes](resources/licenses/CORRESPONDING-SOURCE.md).
+Pyodide and the Shapely/GEOS binaries are unmodified. Their linked source releases and Pyodide recipes provide source and rebuilding instructions; users can substitute rebuilt wheels at the same static paths and regenerate the resource lock/manifest. Dependency source archives required for redistribution are included under `licenses/sources/` by the asset preparation script. No desktop bridge, .NET, WebView2, native OCR runtime or installer builder is included in this web distribution. Historical native license records in the repository remain historical.
 
-The WebView2 standalone installer may be redistributed only under Microsoft's
-terms. It installs the shared Evergreen runtime and its update service; this is
-separate from CaliSift's local file processing. CaliSift sends no event, image,
-name, or document to a cloud API and does not install a reminder service.
+Synthetic images and examples in this repository are test fixtures, not real personal schedules or independently reviewed accuracy evidence.
