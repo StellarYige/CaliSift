@@ -26,6 +26,8 @@ with zipfile.ZipFile(artifact, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as ar
 
     def add(file, name):
         info = zipfile.ZipInfo(name, (2026, 9, 13, 0, 0, 0))
+        info.create_system = 3
+        info.external_attr = 0o100644 << 16
         info.compress_type = zipfile.ZIP_DEFLATED
         archive.writestr(info, file.read_bytes())
 
